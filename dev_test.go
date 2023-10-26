@@ -23,16 +23,16 @@ func TestGetUserFromEmail(t *testing.T) {
 
 func TestInsertOneMagang(t *testing.T) {
 	var doc model.Magang
-   doc.Logo = "https://fatwaff.github.io/bk-image/user/ford.jpg"
+//    doc.Logo = "https://fatwaff.github.io/bk-image/user/ford.jpg"
    doc.Posisi = "Network Engineer"
    doc.Perusahaan = "Ford Company Etc"
    doc.Lokasi = "Bandung"
    doc.CreatedAt = "07-08-2023"
-   doc.DeskripsiPekerjaan = "<div><ul><li>Mengurus administrasi bagian marketing</li><li>Membuat Sales Order,membuat Penawaran Harga</li><li>Menerima Purchase Order (PO) Customer</li><li>Membina hubungan baik antara Perusahaan dan Customer</li><li>Bisa bekerja secara akurat dan memperhatikan detail sehingga bisa memproses pesanan dengan cepat dan efisien</li><li>Jujur, pekerja keras,ulet,tekun,bertanggung jawab,punya komitmen yang tinggi, percaya diri, memiliki kemampuan komunikasi yang baik</li></ul></div>"
-   doc.InfoTambahanPekerjaan = "<div><ul><li>Pengalaman 3 tahun kerja</li><li>Pegawai tetap</li></ul></div>"
+   doc.DeskripsiMagang = "<div><ul><li>Mengurus administrasi bagian marketing</li><li>Membuat Sales Order,membuat Penawaran Harga</li><li>Menerima Purchase Order (PO) Customer</li><li>Membina hubungan baik antara Perusahaan dan Customer</li><li>Bisa bekerja secara akurat dan memperhatikan detail sehingga bisa memproses pesanan dengan cepat dan efisien</li><li>Jujur, pekerja keras,ulet,tekun,bertanggung jawab,punya komitmen yang tinggi, percaya diri, memiliki kemampuan komunikasi yang baik</li></ul></div>"
+   doc.InfoTambahanMagang = "<div><ul><li>Pengalaman 3 tahun kerja</li><li>Pegawai tetap</li></ul></div>"
    doc.TentangPerusahaan = "<div>Ford Motor Company (commonly known as Ford) is an American multinational automobile manufacturer headquartered in Dearborn, Michigan, United States. It was founded by Henry Ford and incorporated on June 16, 1903. The company sells automobiles and commercial vehicles under the Ford brand, and luxury cars under its Lincoln brand.</div>"
-   doc.InfoTambahanPerusahaan = "<div><ul><li>1000-2000 Pekerja</li><li>Industri Manufaktur/Produksi</li></ul></div>"
-   if doc.Logo == "" || doc.Posisi == "" || doc.Perusahaan == "" || doc.Lokasi == "" || doc.CreatedAt == "" || doc.DeskripsiPekerjaan == "" || doc.InfoTambahanPekerjaan == "" || doc.TentangPerusahaan == "" || doc.InfoTambahanPerusahaan == "" {
+//    doc.InfoTambahanPerusahaan = "<div><ul><li>1000-2000 Pekerja</li><li>Industri Manufaktur/Produksi</li></ul></div>"
+   if  doc.Posisi == "" || doc.Perusahaan == "" || doc.Lokasi == "" || doc.CreatedAt == "" || doc.DeskripsiMagang == "" || doc.InfoTambahanMagang == "" || doc.TentangPerusahaan == "" {
 	   t.Errorf("mohon untuk melengkapi data")
    } else {
 	   insertedID, err := module.InsertOneDoc(db, "lowongan", doc)

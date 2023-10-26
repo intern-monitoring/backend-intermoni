@@ -40,15 +40,13 @@ type Mitra struct {
 
 type Magang struct {
 	ID              		primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
-	Logo            		string			   `bson:"logo,omitempty" json:"logo,omitempty"`
 	Posisi         			string			   `bson:"posisi,omitempty" json:"posisi,omitempty"`
 	Perusahaan      		string			   `bson:"perusahaan,omitempty" json:"perusahaan,omitempty"`
 	Lokasi          		string			   `bson:"lokasi,omitempty" json:"lokasi,omitempty"`
 	CreatedAt       		string			   `bson:"createdat,omitempty" json:"createdat,omitempty"`
-	DeskripsiPekerjaan  	string			   `bson:"deskripsipekerjaan,omitempty" json:"deskripsipekerjaan,omitempty"`
-	InfoTambahanPekerjaan   string			   `bson:"infotambahanpekerjaan,omitempty" json:"infotambahanpekerjaan,omitempty"`
+	DeskripsiMagang  		string			   `bson:"deskripsimagang,omitempty" json:"deskripsimagang,omitempty"`
+	InfoTambahanMagang   	string			   `bson:"infotambahanmagang,omitempty" json:"infotambahanmagang,omitempty"`
 	TentangPerusahaan   	string			   `bson:"tentangperusahaan,omitempty" json:"tentangperusahaan,omitempty"`
-	InfoTambahanPerusahaan  string			   `bson:"infotambahanperusahaan,omitempty" json:"infotambahanperusahaan,omitempty"`
 }
 
 type Credential struct {
