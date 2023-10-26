@@ -76,7 +76,6 @@ func GCFHandlerLogin(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname string, r *
 	return GCFReturnStruct(Response)
 }
 
-
 func GCFHandlerGetAll(MONGOCONNSTRINGENV, dbname, col string, docs interface{}) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	data := GetAllDocs(conn, col, docs)

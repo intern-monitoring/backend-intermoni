@@ -215,17 +215,30 @@ func LogIn(db *mongo.Database, insertedDoc model.User) (user model.User, err err
 }
 
 //user
-func GetUserFromEmail(email string, db *mongo.Database) (result model.User, err error) {
+func GetUserFromID(_id primitive.ObjectID, db *mongo.Database) (doc model.User, err error) {
+	collection := db.Collection("user")
+	filter := bson.M{"_id": _id}
+	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return doc, fmt.Errorf("no data found for ID %s", _id)
+		}
+		return doc, fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
+	}
+	return doc, nil
+}
+
+func GetUserFromEmail(email string, db *mongo.Database) (doc model.User, err error) {
 	collection := db.Collection("user")
 	filter := bson.M{"email": email}
-	err = collection.FindOne(context.TODO(), filter).Decode(&result)
+	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return result, fmt.Errorf("email tidak ditemukan")
+			return doc, fmt.Errorf("email tidak ditemukan")
 		}
-		return result, fmt.Errorf("kesalahan server")
+		return doc, fmt.Errorf("kesalahan server")
 	}
-	return result, nil
+	return doc, nil
 }
 
 // mahasiswa
@@ -242,31 +255,31 @@ func GetMahasiswaFromID(_id primitive.ObjectID, db *mongo.Database) (doc model.M
 	return doc, nil
 }
 
-func GetMahasiswaFromEmail(email string, db *mongo.Database, col string) (result model.Mahasiswa, err error) {
+func GetMahasiswaFromEmail(email string, db *mongo.Database, col string) (doc model.Mahasiswa, err error) {
 	collection := db.Collection(col)
 	filter := bson.M{"email": email}
-	err = collection.FindOne(context.TODO(), filter).Decode(&result)
+	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return result, fmt.Errorf("email tidak ditemukan")
+			return doc, fmt.Errorf("email tidak ditemukan")
 		}
-		return result, fmt.Errorf("kesalahan server")
+		return doc, fmt.Errorf("kesalahan server")
 	}
-	return result, nil
+	return doc, nil
 }
 
 // industri
-func GetMitraFromEmail(email string, db *mongo.Database, col string) (result model.Mitra, err error) {
+func GetMitraFromEmail(email string, db *mongo.Database, col string) (doc model.Mitra, err error) {
 	collection := db.Collection(col)
 	filter := bson.M{"email": email}
-	err = collection.FindOne(context.TODO(), filter).Decode(&result)
+	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return result, fmt.Errorf("email tidak ditemukan")
+			return doc, fmt.Errorf("email tidak ditemukan")
 		}
-		return result, fmt.Errorf("kesalahan server")
+		return doc, fmt.Errorf("kesalahan server")
 	}
-	return result, nil
+	return doc, nil
 }
 
 // magang
