@@ -47,6 +47,7 @@ type Magang struct {
 	DeskripsiMagang  		string			   `bson:"deskripsimagang,omitempty" json:"deskripsimagang,omitempty"`
 	InfoTambahanMagang   	string			   `bson:"infotambahanmagang,omitempty" json:"infotambahanmagang,omitempty"`
 	TentangPerusahaan   	string			   `bson:"tentangperusahaan,omitempty" json:"tentangperusahaan,omitempty"`
+	Expired   				string			   `bson:"expired,omitempty" json:"expired,omitempty"`
 }
 
 type Credential struct {
