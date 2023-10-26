@@ -168,7 +168,7 @@ func SignUpMitra(db *mongo.Database, col string, insertedDoc model.Mitra)  error
 		"email": insertedDoc.Akun.Email,
 		"password": hex.EncodeToString(hashedPassword),
 		"salt": hex.EncodeToString(salt),
-		"role": "mahasiswa",
+		"role": "mitra",
 	}
 	mitra := bson.M{
 		"namanarahubung": insertedDoc.NamaNarahubung,
