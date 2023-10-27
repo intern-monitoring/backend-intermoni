@@ -6,6 +6,7 @@ import (
 
 	"github.com/intern-monitoring/backend-intermoni/model"
 	"github.com/intern-monitoring/backend-intermoni/module"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	// "go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -45,9 +46,14 @@ func TestInsertOneMagang(t *testing.T) {
    }
 }
 
+type Userr struct {
+	ID           	primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	Email  			string             `bson:"email,omitempty" json:"email,omitempty"`
+	Role     		string			   `bson:"role,omitempty" json:"role,omitempty"`
+}
+
 func TestGetAllDoc(t *testing.T) {
-	var docs []model.Magang
-	hasil := module.GetAllDocs(db, "lowongan", docs)
+	hasil := module.GetAllDocs(db, "user", []Userr{})
 	fmt.Println(hasil)
 }
 
@@ -151,13 +157,18 @@ func TestLogIn(t *testing.T) {
 	}
 }
 
-// func TestGeneratePrivateKeyPaseto(t *testing.T) {
-// 	privateKey, publicKey := module.GenerateKey()
-// 	fmt.Println("ini private key :", privateKey)
-// 	fmt.Println("ini public key :", publicKey)
-// 	hasil, err := module.Encode("fatwaff@gmail.com", privateKey)
-// 	fmt.Println("ini hasil :", hasil, err)
-// }
+func TestGeneratePrivateKeyPaseto(t *testing.T) {
+	privateKey, publicKey := module.GenerateKey()
+	fmt.Println("ini private key :", privateKey)
+	fmt.Println("ini public key :", publicKey)
+	id := "64d0b1104255ba95ba588512"
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil{
+		t.Fatalf("error converting id to objectID: %v", err)
+	}
+	hasil, err := module.Encode(objectId, privateKey)
+	fmt.Println("ini hasil :", hasil, err)
+}
 
 // func TestWatoken2(t *testing.T) {
 // 	var user model.User
