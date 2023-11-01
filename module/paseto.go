@@ -10,12 +10,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func Encode(id primitive.ObjectID, privateKey string) (string, error) {
+func Encode(id primitive.ObjectID, role, privateKey string) (string, error) {
 	token := paseto.NewToken()
 	token.SetIssuedAt(time.Now())
 	token.SetNotBefore(time.Now())
 	token.SetExpiration(time.Now().Add(2 * time.Hour))
 	token.Set("id", id)
+	token.SetString("role", role)
 	secretKey, err := paseto.NewV4AsymmetricSecretKeyFromHex(privateKey)
 	return token.V4Sign(secretKey, nil), err
 }
