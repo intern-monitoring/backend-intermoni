@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/badoux/checkmail"
 	"github.com/intern-monitoring/backend-intermoni/model"
@@ -34,11 +35,11 @@ func GetAllDocs(db *mongo.Database, col string, docs interface{}) interface{} {
 	filter := bson.M{}
 	cursor, err := collection.Find(context.TODO(), filter)
 	if err != nil {
-		fmt.Println("Error GetAllDocs in colecction", col, ":", err)
+		return fmt.Errorf("error GetAllDocs %s: %s", col, err)
 	}
 	err = cursor.All(context.TODO(), &docs)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 	return docs
 }
@@ -52,15 +53,14 @@ func InsertOneDoc(db *mongo.Database, col string, doc interface{}) (insertedID p
 	return insertedID, nil
 }
 
-func UpdateOneDoc(db *mongo.Database, col string, id primitive.ObjectID, doc interface{}) (err error) {
+func UpdateOneDoc(id primitive.ObjectID, db *mongo.Database, col string, doc interface{}) (err error) {
 	filter := bson.M{"_id": id}
 	result, err := db.Collection(col).UpdateOne(context.Background(), filter, bson.M{"$set": doc})
 	if err != nil {
-		fmt.Printf("UpdatePresensi: %v\n", err)
-		return 
+		return fmt.Errorf("error update: %v", err)
 	}
 	if result.ModifiedCount == 0 {
-		err = errors.New("no data has been changed with the specified id")
+		err = errors.New("Tidak ada data yang diubah")
 		return
 	}
 	return nil
@@ -82,7 +82,7 @@ func DeleteOneDoc(_id primitive.ObjectID, db *mongo.Database, col string) error 
 }
 
 // signup
-func SignUpMahasiswa(db *mongo.Database, col string, insertedDoc model.Mahasiswa) error {
+func SignUpMahasiswa(db *mongo.Database, insertedDoc model.Mahasiswa) error {
 	objectId := primitive.NewObjectID() 
 	if insertedDoc.NamaLengkap == "" || insertedDoc.TanggalLahir == "" || insertedDoc.JenisKelamin == "" || insertedDoc.NIM == "" || insertedDoc.PerguruanTinggi == "" || insertedDoc.Prodi == "" || insertedDoc.Akun.Email == "" || insertedDoc.Akun.Password == "" {
 		return fmt.Errorf("mohon untuk melengkapi data")
@@ -106,7 +106,7 @@ func SignUpMahasiswa(db *mongo.Database, col string, insertedDoc model.Mahasiswa
 	salt := make([]byte, 16)
 	_, err := rand.Read(salt)
 	if err != nil {
-		return fmt.Errorf("kesalahan server")
+		return fmt.Errorf("kesalahan server : salt")
 	}
 	hashedPassword := argon2.IDKey([]byte(insertedDoc.Akun.Password), salt, 1, 64*1024, 4, 32)
 	user := bson.M{
@@ -129,14 +129,14 @@ func SignUpMahasiswa(db *mongo.Database, col string, insertedDoc model.Mahasiswa
 	if err != nil {
 		return fmt.Errorf("kesalahan server")
 	}
-	_, err = InsertOneDoc(db, col, mahasiswa)
+	_, err = InsertOneDoc(db, "mahasiswa", mahasiswa)
 	if err != nil {
 		return fmt.Errorf("kesalahan server")
 	}
 	return nil
 }
 
-func SignUpMitra(db *mongo.Database, col string, insertedDoc model.Mitra)  error {
+func SignUpMitra(db *mongo.Database, insertedDoc model.Mitra) error {
 	objectId := primitive.NewObjectID()
 	if insertedDoc.NamaNarahubung == "" || insertedDoc.NoHpNarahubung == "" || insertedDoc.NamaResmi == "" || insertedDoc.Kategori == "" || insertedDoc.SektorIndustri == "" || insertedDoc.Alamat == "" || insertedDoc.Website == "" || insertedDoc.Akun.Email == "" || insertedDoc.Akun.Password == "" {
 		return fmt.Errorf("mohon untuk melengkapi data")
@@ -178,13 +178,15 @@ func SignUpMitra(db *mongo.Database, col string, insertedDoc model.Mitra)  error
 		"sektorindustri": insertedDoc.SektorIndustri,
 		"alamat": insertedDoc.Alamat,
 		"website": insertedDoc.Website,
-		"akun": objectId,
+		"akun": model.User {
+			ID : objectId,
+		},
 	}
 	_, err = InsertOneDoc(db, "user", user)
 	if err != nil {
 		return err
 	}
-	_, err = InsertOneDoc(db, col, mitra)
+	_, err = InsertOneDoc(db, "mitra", mitra)
 	if err != nil {
 		return err
 	}
@@ -205,7 +207,7 @@ func LogIn(db *mongo.Database, insertedDoc model.User) (user model.User, err err
 	}
 	salt, err := hex.DecodeString(existsDoc.Salt)
 	if err != nil {
-		return user, fmt.Errorf("kesalahan server")
+		return user, fmt.Errorf("kesalahan server : salt")
 	}
 	hash := argon2.IDKey([]byte(insertedDoc.Password), salt, 1, 64*1024, 4, 32)
 	if hex.EncodeToString(hash) != existsDoc.Password {
@@ -243,7 +245,7 @@ func GetUserFromEmail(email string, db *mongo.Database) (doc model.User, err err
 
 // mahasiswa
 func GetMahasiswaFromID(_id primitive.ObjectID, db *mongo.Database) (doc model.Mahasiswa, err error) {
-	collection := db.Collection("user")
+	collection := db.Collection("mahasiswa")
 	filter := bson.M{"_id": _id}
 	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
 	if err != nil {
@@ -255,27 +257,27 @@ func GetMahasiswaFromID(_id primitive.ObjectID, db *mongo.Database) (doc model.M
 	return doc, nil
 }
 
-func GetMahasiswaFromEmail(email string, db *mongo.Database, col string) (doc model.Mahasiswa, err error) {
-	collection := db.Collection(col)
-	filter := bson.M{"email": email}
+// mitra
+func GetMitraFromID(_id primitive.ObjectID, db *mongo.Database) (doc model.Mitra, err error) {
+	collection := db.Collection("mitra")
+	filter := bson.M{"_id": _id}
 	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return doc, fmt.Errorf("email tidak ditemukan")
+			return doc, fmt.Errorf("_id tidak ditemukan")
 		}
 		return doc, fmt.Errorf("kesalahan server")
 	}
 	return doc, nil
 }
 
-// industri
-func GetMitraFromEmail(email string, db *mongo.Database, col string) (doc model.Mitra, err error) {
-	collection := db.Collection(col)
-	filter := bson.M{"email": email}
+func GetMitraFromAkun(akun primitive.ObjectID, db *mongo.Database) (doc model.Mitra, err error) {
+	collection := db.Collection("mitra")
+	filter := bson.M{"akun._id": akun}
 	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return doc, fmt.Errorf("email tidak ditemukan")
+			return doc, fmt.Errorf("mitra tidak ditemukan")
 		}
 		return doc, fmt.Errorf("kesalahan server")
 	}
@@ -283,16 +285,157 @@ func GetMitraFromEmail(email string, db *mongo.Database, col string) (doc model.
 }
 
 // magang
-func GetMagangFromID(_id primitive.ObjectID, db *mongo.Database) (doc model.Magang, err error) {
-	collection := db.Collection("magang")
-	filter := bson.M{"_id": _id}
-	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
-	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return doc, fmt.Errorf("no data found for ID %s", _id)
-		}
-		return doc, fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
+func InsertMagang(_id primitive.ObjectID, db *mongo.Database, insertedDoc model.Magang) error {
+	if insertedDoc.Posisi == "" || insertedDoc.Lokasi == "" || insertedDoc.DeskripsiMagang == "" || insertedDoc.InfoTambahanMagang == "" || insertedDoc.TentangMitra == "" || insertedDoc.Expired == "" {
+		return fmt.Errorf("mohon untuk melengkapi data")
 	}
-	return doc, nil
+	mitra, err := GetMitraFromAkun(_id, db)
+	if err != nil {
+		return err
+	}
+	magang := bson.M{
+		"posisi": insertedDoc.Posisi,
+		"mitra": model.Mitra {
+			ID : mitra.ID,
+			Akun: model.User{
+				ID : _id,
+			},
+		},
+		"lokasi": insertedDoc.Lokasi,
+		"createdat": primitive.NewDateTimeFromTime(time.Now().UTC()),
+		"deskripsimagang": insertedDoc.DeskripsiMagang,
+		"infotambahanmagang": insertedDoc.InfoTambahanMagang,
+		"tentangmitra": insertedDoc.TentangMitra,
+		"expired": insertedDoc.Expired,
+	}
+	_, err = InsertOneDoc(db, "magang", magang)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
+func UpdateMagang(idparam, iduser primitive.ObjectID, db *mongo.Database, insertedDoc model.Magang) error {
+	_, err := GetMagangFromIDByMitra(idparam, iduser, db)
+	if err != nil {
+		return err
+	}
+	if insertedDoc.Posisi == "" || insertedDoc.Lokasi == "" || insertedDoc.DeskripsiMagang == "" || insertedDoc.InfoTambahanMagang == "" || insertedDoc.TentangMitra == "" || insertedDoc.Expired == "" {
+		return fmt.Errorf("mohon untuk melengkapi data")
+	}
+	mitra, err := GetMitraFromAkun(iduser, db)
+	if err != nil {
+		return err
+	}
+	magang := bson.M{
+		"posisi": insertedDoc.Posisi,
+		"mitra": model.Mitra {
+			ID : mitra.ID,
+			Akun: model.User{
+				ID : iduser,
+			},
+		},
+		"lokasi": insertedDoc.Lokasi,
+		"deskripsimagang": insertedDoc.DeskripsiMagang,
+		"infotambahanmagang": insertedDoc.InfoTambahanMagang,
+		"tentangmitra": insertedDoc.TentangMitra,
+		"expired": insertedDoc.Expired,
+	}
+	err = UpdateOneDoc(idparam, db, "magang", magang)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteMagang(idparam, iduser primitive.ObjectID, db *mongo.Database) error {
+	_, err := GetMagangFromIDByMitra(idparam, iduser, db)
+	if err != nil {
+		return err
+	}
+	err = DeleteOneDoc(idparam, db, "magang")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetAllMagang(db *mongo.Database) (magang []model.Magang, err error) {
+	collection := db.Collection("magang")
+	filter := bson.M{}
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		return magang, fmt.Errorf("error GetAllMagang mongo: %s", err)
+	}
+	err = cursor.All(context.TODO(), &magang)
+	if err != nil {
+		return magang, fmt.Errorf("error GetAllMagang context: %s", err)
+	}
+	for _, m := range magang {
+		mitra, err := GetMitraFromID(m.Mitra.ID, db)
+		if err != nil {
+			fmt.Println(m.Mitra.ID)
+			return magang, fmt.Errorf("error GetAllMagang get mitra: %s", err)
+		}
+		m.Mitra = mitra
+		magang = append(magang, m)
+		magang = magang[1:]
+	}
+	return magang, nil
+}
+
+func GetMagangFromMitra(_id primitive.ObjectID, db *mongo.Database) (magang []model.Magang, err error) {
+	collection := db.Collection("magang")
+	mitra, err := GetMitraFromAkun(_id, db)
+	if err != nil {
+		return magang, err
+	}
+	filter := bson.M{"mitra._id": mitra.ID}
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return magang, fmt.Errorf("error GetMagangByMitra mongo: %s", err)
+	}
+	err = cursor.All(context.Background(), &magang)
+	if err != nil {
+		return magang, fmt.Errorf("error GetMagangByMitra context: %s", err)
+	}
+	return magang, nil
+}
+
+func GetMagangFromID(_id primitive.ObjectID, db *mongo.Database) (magang model.Magang, err error) {
+	collection := db.Collection("magang")
+	filter := bson.M{"_id": _id}
+	err = collection.FindOne(context.TODO(), filter).Decode(&magang)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return magang, fmt.Errorf("no data found for ID %s", _id)
+		}
+		return magang, fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
+	}
+	mitra, err := GetMitraFromID(magang.Mitra.ID, db)
+	if err != nil {
+		return magang, fmt.Errorf("error GetAllMagang get mitra: %s", err)
+	}
+	magang.Mitra = mitra
+	return magang, nil
+}
+
+func GetMagangFromIDByMitra(idparam, iduser primitive.ObjectID, db *mongo.Database) (magang model.Magang, err error) {
+	collection := db.Collection("magang")
+	filter := bson.M{"_id": idparam}
+	err = collection.FindOne(context.TODO(), filter).Decode(&magang)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return magang, fmt.Errorf("no data found for ID %s", idparam)
+		}
+		return magang, fmt.Errorf("error retrieving data for ID %s: %s", idparam, err.Error())
+	}
+	mitra, err := GetMitraFromAkun(iduser, db)
+	if err != nil {
+		return magang, err
+	}
+	if magang.Mitra.ID != mitra.ID {
+		return magang, fmt.Errorf("kamuh bukan pemilik magang ini")
+	}
+	return magang, nil
+}
