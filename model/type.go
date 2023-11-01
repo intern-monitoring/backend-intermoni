@@ -41,12 +41,12 @@ type Mitra struct {
 type Magang struct {
 	ID              		primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	Posisi         			string			   `bson:"posisi,omitempty" json:"posisi,omitempty"`
-	Perusahaan      		string			   `bson:"perusahaan,omitempty" json:"perusahaan,omitempty"`
+	Mitra		      		Mitra			   `bson:"mitra,omitempty" json:"mitra,omitempty"`
 	Lokasi          		string			   `bson:"lokasi,omitempty" json:"lokasi,omitempty"`
-	CreatedAt       		string			   `bson:"createdat,omitempty" json:"createdat,omitempty"`
+	CreatedAt       		primitive.DateTime `bson:"createdat,omitempty" json:"createdat,omitempty"`
 	DeskripsiMagang  		string			   `bson:"deskripsimagang,omitempty" json:"deskripsimagang,omitempty"`
 	InfoTambahanMagang   	string			   `bson:"infotambahanmagang,omitempty" json:"infotambahanmagang,omitempty"`
-	TentangPerusahaan   	string			   `bson:"tentangperusahaan,omitempty" json:"tentangperusahaan,omitempty"`
+	TentangMitra		   	string			   `bson:"tentangmitra,omitempty" json:"tentangmitra,omitempty"`
 	Expired   				string			   `bson:"expired,omitempty" json:"expired,omitempty"`
 }
 
@@ -58,6 +58,7 @@ type Credential struct {
 
 type Payload struct {
 	Id           	primitive.ObjectID `json:"id"`
+	Role           	string			   `json:"role"`
 	Exp 			time.Time 	 	   `json:"exp"`
 	Iat 			time.Time 		   `json:"iat"`
 	Nbf 			time.Time 		   `json:"nbf"`
