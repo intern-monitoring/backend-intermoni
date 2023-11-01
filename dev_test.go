@@ -26,17 +26,15 @@ func TestInsertOneMagang(t *testing.T) {
 	var doc model.Magang
 //    doc.Logo = "https://fatwaff.github.io/bk-image/user/ford.jpg"
    doc.Posisi = "Network Engineer"
-   doc.Perusahaan = "Ford Company Etc"
    doc.Lokasi = "Bandung"
-   doc.CreatedAt = "07-08-2023"
-   doc.DeskripsiMagang = "<div><ul><li>Mengurus administrasi bagian marketing</li><li>Membuat Sales Order,membuat Penawaran Harga</li><li>Menerima Purchase Order (PO) Customer</li><li>Membina hubungan baik antara Perusahaan dan Customer</li><li>Bisa bekerja secara akurat dan memperhatikan detail sehingga bisa memproses pesanan dengan cepat dan efisien</li><li>Jujur, pekerja keras,ulet,tekun,bertanggung jawab,punya komitmen yang tinggi, percaya diri, memiliki kemampuan komunikasi yang baik</li></ul></div>"
+   doc.DeskripsiMagang = "<div><ul><li>Mengurus administrasi bagian marketing</li><li>Membuat Sales Order,membuat Penawaran Harga</li><li>Menerima Purchase Order (PO) Customer</li><li>Membina hubungan baik antara Mitra dan Customer</li><li>Bisa bekerja secara akurat dan memperhatikan detail sehingga bisa memproses pesanan dengan cepat dan efisien</li><li>Jujur, pekerja keras,ulet,tekun,bertanggung jawab,punya komitmen yang tinggi, percaya diri, memiliki kemampuan komunikasi yang baik</li></ul></div>"
    doc.InfoTambahanMagang = "<div><ul><li>Pengalaman 3 tahun kerja</li><li>Pegawai tetap</li></ul></div>"
-   doc.TentangPerusahaan = "<div>Ford Motor Company (commonly known as Ford) is an American multinational automobile manufacturer headquartered in Dearborn, Michigan, United States. It was founded by Henry Ford and incorporated on June 16, 1903. The company sells automobiles and commercial vehicles under the Ford brand, and luxury cars under its Lincoln brand.</div>"
-//    doc.InfoTambahanPerusahaan = "<div><ul><li>1000-2000 Pekerja</li><li>Industri Manufaktur/Produksi</li></ul></div>"
-   if  doc.Posisi == "" || doc.Perusahaan == "" || doc.Lokasi == "" || doc.CreatedAt == "" || doc.DeskripsiMagang == "" || doc.InfoTambahanMagang == "" || doc.TentangPerusahaan == "" {
+   doc.TentangMitra = "<div>Ford Motor Company (commonly known as Ford) is an American multinational automobile manufacturer headquartered in Dearborn, Michigan, United States. It was founded by Henry Ford and incorporated on June 16, 1903. The company sells automobiles and commercial vehicles under the Ford brand, and luxury cars under its Lincoln brand.</div>"
+//    doc.InfoTambahanMitra = "<div><ul><li>1000-2000 Pekerja</li><li>Industri Manufaktur/Produksi</li></ul></div>"
+   if  doc.Posisi == "" || doc.Lokasi == "" || doc.DeskripsiMagang == "" || doc.InfoTambahanMagang == "" || doc.TentangMitra == "" {
 	   t.Errorf("mohon untuk melengkapi data")
    } else {
-	   insertedID, err := module.InsertOneDoc(db, "lowongan", doc)
+	   insertedID, err := module.InsertOneDoc(db, "magang", doc)
 	   if err != nil {
 		   t.Errorf("Error inserting document: %v", err)
 		   fmt.Println("Data tidak berhasil disimpan")
@@ -102,7 +100,7 @@ func TestSignUpMahasiswa(t *testing.T) {
 	doc.Akun.Email = "erdito2@gmail.com"
 	doc.Akun.Password = "fghjkliow"
 	doc.Akun.Confirmpassword = "fghjkliow"
-	err := module.SignUpMahasiswa(db, "mahasiswa", doc)
+	err := module.SignUpMahasiswa(db, doc)
 	if err != nil {
 		t.Errorf("Error inserting document: %v", err)
 	} else {
@@ -112,17 +110,17 @@ func TestSignUpMahasiswa(t *testing.T) {
 
 func TestSignUpMitra(t *testing.T) {
 	var doc model.Mitra
-	doc.NamaNarahubung = "Erdito Nausha Adam"
+	doc.NamaNarahubung = "Dimas Ardianto"
 	doc.NoHpNarahubung = "085728980009"
-	doc.NamaResmi = "PT. Maju Mundur"
+	doc.NamaResmi = "PT. Mundur Maju"
 	doc.Kategori = "BUMN"
 	doc.SektorIndustri = "Teknologi Informasi"
-	doc.Alamat = "Jl. Sariasih 2"
-	doc.Website = "www.majumundur.com"
-	doc.Akun.Email = "erdito@gmail.com"
+	doc.Alamat = "Jl. Sariasih 3"
+	doc.Website = "www.mundurmaju.com"
+	doc.Akun.Email = "dimas@gmail.com"
 	doc.Akun.Password = "fghjkliow"
 	doc.Akun.Confirmpassword = "fghjkliow"
-	err := module.SignUpMitra(db, "mitra", doc)
+	err := module.SignUpMitra(db, doc)
 	if err != nil {
 		t.Errorf("Error inserting document: %v", err)
 	} else {
@@ -163,10 +161,11 @@ func TestGeneratePrivateKeyPaseto(t *testing.T) {
 	fmt.Println("ini public key :", publicKey)
 	id := "64d0b1104255ba95ba588512"
 	objectId, err := primitive.ObjectIDFromHex(id)
+	role := "admin"
 	if err != nil{
 		t.Fatalf("error converting id to objectID: %v", err)
 	}
-	hasil, err := module.Encode(objectId, privateKey)
+	hasil, err := module.Encode(objectId, role, privateKey)
 	fmt.Println("ini hasil :", hasil, err)
 }
 
@@ -232,3 +231,145 @@ func TestWatoken(t *testing.T) {
 // 		}
 // 	}
 // }
+
+
+// test magang
+func TestInsertMagang(t *testing.T) {
+	conn := module.MongoConnect("MONGOSTRING", "db_intermoni")
+	payload, err := module.Decode("b95509d9634ed137b5ccdd07a7534ab0dcede0f310c09634afbf0262c7a4ce1c", "v4.public.eyJleHAiOiIyMDIzLTEwLTMxVDA4OjQ4OjIyWiIsImlhdCI6IjIwMjMtMTAtMzFUMDY6NDg6MjJaIiwiaWQiOiI2NTQwNjMyODI4NzY0ZDk2YzY0OWYyOWQiLCJuYmYiOiIyMDIzLTEwLTMxVDA2OjQ4OjIyWiJ9lXy1b5nOEYuCn7_o-TcFuR-3OOm__T7SHlAdx3PQl4Du9EAr8pu85lvU6SddRar7YB3DEbf-zwfY_zytj7jrAQ")
+	if err != nil {
+		t.Errorf("Error decode token: %v", err)
+	}
+	// if payload.Role != "mitra" {
+	// 	t.Errorf("Error role: %v", err)
+	// }
+	var datamagang model.Magang
+	datamagang.Posisi = "Data Science"
+	datamagang.Lokasi = "Bandung"
+	datamagang.DeskripsiMagang = "<div><ul><li>Mengurus administrasi bagian marketing</li><li>Membuat Sales Order,membuat Penawaran Harga</li><li>Menerima Purchase Order (PO) Customer</li><li>Membina hubungan baik antara Mitra dan Customer</li><li>Bisa bekerja secara akurat dan memperhatikan detail sehingga bisa memproses pesanan dengan cepat dan efisien</li><li>Jujur, pekerja keras,ulet,tekun,bertanggung jawab,punya komitmen yang tinggi, percaya diri, memiliki kemampuan komunikasi yang baik</li></ul></div>"
+	datamagang.InfoTambahanMagang = "<div><ul><li>Pengalaman 3 tahun kerja</li><li>Pegawai tetap</li></ul></div>"
+	datamagang.TentangMitra = "<div>Ford Motor Company (commonly known as Ford) is an American multinational automobile manufacturer headquartered in Dearborn, Michigan, United States. It was founded by Henry Ford and incorporated on June 16, 1903. The company sells automobiles and commercial vehicles under the Ford brand, and luxury cars under its Lincoln brand.</div>"
+	datamagang.Expired = "01-11-2023"
+	err = module.InsertMagang(payload.Id, conn, datamagang)
+	if err != nil {
+		t.Errorf("Error insert : %v", err)
+	} else {
+		fmt.Println("Berhasil yey!")
+	}
+}
+
+func TestUpdateMagang(t *testing.T) {
+	conn := module.MongoConnect("MONGOSTRING", "db_intermoni")
+	payload, err := module.Decode("b95509d9634ed137b5ccdd07a7534ab0dcede0f310c09634afbf0262c7a4ce1c", "v4.public.eyJleHAiOiIyMDIzLTExLTAxVDA2OjQ5OjQ0WiIsImlhdCI6IjIwMjMtMTEtMDFUMDQ6NDk6NDRaIiwiaWQiOiI2NTQwNjMyODI4NzY0ZDk2YzY0OWYyOWQiLCJuYmYiOiIyMDIzLTExLTAxVDA0OjQ5OjQ0WiJ92RxBGslXaHBoLQhvMJLQO7uEBG5c5FmkpZgakPjmk1aUFDdRkw3m3r-7BpkhDmCtByoARDr36X3DhjCL8HT8AQ")
+	// payload, err := module.Decode("b95509d9634ed137b5ccdd07a7534ab0dcede0f310c09634afbf0262c7a4ce1c", "v4.public.eyJleHAiOiIyMDIzLTExLTAxVDA2OjQ3OjMxWiIsImlhdCI6IjIwMjMtMTEtMDFUMDQ6NDc6MzFaIiwiaWQiOiI2NTNkZTllYjg5MzlmYjNjZjI3ZjZkMzciLCJuYmYiOiIyMDIzLTExLTAxVDA0OjQ3OjMxWiJ92YbTLQWznLupbH0Syb6GPKkj4ZW_JJLveVcFTfZElv8_jybZCMBnw8y-7SLZVMpRTq56PaArdEBwlvvSPQjtCg")
+	if err != nil {
+		t.Errorf("Error decode token: %v", err)
+	}
+	// if payload.Role != "mitra" {
+	// 	t.Errorf("Error role: %v", err)
+	// }
+	var datamagang model.Magang
+	datamagang.Posisi = "Data Sciences"
+	datamagang.Lokasi = "Bandung"
+	datamagang.DeskripsiMagang = "<div><ul><li>Mengurus administrasi bagian marketing</li><li>Membuat Sales Order,membuat Penawaran Harga</li><li>Menerima Purchase Order (PO) Customer</li><li>Membina hubungan baik antara Mitra dan Customer</li><li>Bisa bekerja secara akurat dan memperhatikan detail sehingga bisa memproses pesanan dengan cepat dan efisien</li><li>Jujur, pekerja keras,ulet,tekun,bertanggung jawab,punya komitmen yang tinggi, percaya diri, memiliki kemampuan komunikasi yang baik</li></ul></div>"
+	datamagang.InfoTambahanMagang = "<div><ul><li>Pengalaman 3 tahun kerja</li><li>Pegawai tetap</li></ul></div>"
+	datamagang.TentangMitra = "<div>Ford Motor Company (commonly known as Ford) is an American multinational automobile manufacturer headquartered in Dearborn, Michigan, United States. It was founded by Henry Ford and incorporated on June 16, 1903. The company sells automobiles and commercial vehicles under the Ford brand, and luxury cars under its Lincoln brand.</div>"
+	datamagang.Expired = "01-11-2023"
+	id := "65406377996edfaee3ed9a19"
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil{
+		t.Fatalf("error converting id to objectID: %v", err)
+	}
+	err = module.UpdateMagang(objectId, payload.Id, conn, datamagang)
+	if err != nil {
+		t.Errorf("Error update : %v", err)
+	} else {
+		fmt.Println("Berhasil yey!")
+	}
+}
+
+func TestDeleteMagang(t *testing.T) {
+	conn := module.MongoConnect("MONGOSTRING", "db_intermoni")
+	payload, err := module.Decode("b95509d9634ed137b5ccdd07a7534ab0dcede0f310c09634afbf0262c7a4ce1c", "v4.public.eyJleHAiOiIyMDIzLTExLTAxVDA2OjQ5OjQ0WiIsImlhdCI6IjIwMjMtMTEtMDFUMDQ6NDk6NDRaIiwiaWQiOiI2NTQwNjMyODI4NzY0ZDk2YzY0OWYyOWQiLCJuYmYiOiIyMDIzLTExLTAxVDA0OjQ5OjQ0WiJ92RxBGslXaHBoLQhvMJLQO7uEBG5c5FmkpZgakPjmk1aUFDdRkw3m3r-7BpkhDmCtByoARDr36X3DhjCL8HT8AQ")
+	if err != nil {
+		t.Errorf("Error decode token: %v", err)
+	}
+	// if payload.Role != "mitra" {
+	// 	t.Errorf("Error role: %v", err)
+	// }
+	id := "65406377996edfaee3ed9a19"
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil{
+		t.Fatalf("error converting id to objectID: %v", err)
+	}
+	err = module.DeleteMagang(objectId, payload.Id, conn)
+	if err != nil {
+		t.Errorf("Error delete : %v", err)
+	} else {
+		fmt.Println("Berhasil yey!")
+	}
+}
+
+func TestGetMagangByMitra(t *testing.T) {
+	conn := module.MongoConnect("MONGOSTRING", "db_intermoni")
+	payload, err := module.Decode("b95509d9634ed137b5ccdd07a7534ab0dcede0f310c09634afbf0262c7a4ce1c", "v4.public.eyJleHAiOiIyMDIzLTEwLTMxVDEwOjIxOjI4WiIsImlhdCI6IjIwMjMtMTAtMzFUMDg6MjE6MjhaIiwiaWQiOiI2NTQwNjMyODI4NzY0ZDk2YzY0OWYyOWQiLCJuYmYiOiIyMDIzLTEwLTMxVDA4OjIxOjI4WiJ9CoWv7X_t-idleCPyTX3jvwbcSR038WX6av6gmh8hpAV5_B5Moe11GK-hpz-osTdzpAuTUw0Qsueic9ny0qg1DQ")
+	if err != nil {
+		t.Errorf("Error decode token: %v", err)
+	}
+	// if payload.Role != "mitra" {
+	// 	t.Errorf("Error role: %v", err)
+	// }
+	magang, err := module.GetMagangFromMitra(payload.Id, conn)
+	if err != nil {
+		t.Errorf("Error get magang : %v", err)
+	} else {
+		fmt.Println(magang)
+	}
+}
+
+func TestGetAllMagang(t *testing.T) {
+	conn := module.MongoConnect("MONGOSTRING", "db_intermoni")
+	data, err := module.GetAllMagang(conn)
+	if err != nil {
+		t.Errorf("Error get all : %v", err)
+	} else {
+		fmt.Println(data)
+	}
+}
+
+func TestGetMagangFromID(t *testing.T) {
+	conn := module.MongoConnect("MONGOSTRING", "db_intermoni")
+	id := "65406377996edfaee3ed9a19"
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil{
+		t.Fatalf("error converting id to objectID: %v", err)
+	}
+	magang, err := module.GetMagangFromID(objectId, conn)
+	if err != nil {
+		t.Errorf("Error get magang : %v", err)
+	} else {
+		fmt.Println(magang)
+	}
+}
+
+func TestGetMagangFromIDByMitra(t *testing.T) {
+	conn := module.MongoConnect("MONGOSTRING", "db_intermoni")
+	payload, err := module.Decode("b95509d9634ed137b5ccdd07a7534ab0dcede0f310c09634afbf0262c7a4ce1c", "v4.public.eyJleHAiOiIyMDIzLTEwLTMxVDE0OjI1OjQxWiIsImlhdCI6IjIwMjMtMTAtMzFUMTI6MjU6NDFaIiwiaWQiOiI2NTNkZTllYjg5MzlmYjNjZjI3ZjZkMzciLCJuYmYiOiIyMDIzLTEwLTMxVDEyOjI1OjQxWiJ9RUHYj4xe2MmJcABLLiQ_ftjiNiM2CW6ABhSY0ovQ9SL0uQ9AK2m2v7svW2LU5u8XWB4tQUjQchelIId8KzITDQ")
+	if err != nil {
+		t.Errorf("Error decode token: %v", err)
+	}
+	// if payload.Role != "mitra" {
+	// 	t.Errorf("Error role: %v", err)
+	// }
+	id := "654060d83f526c35452232cf"
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil{
+		t.Fatalf("error converting id to objectID: %v", err)
+	}
+	magang, err := module.GetMagangFromIDByMitra(objectId, payload.Id, conn)
+	if err != nil {
+		t.Errorf("Error get magang : %v", err)
+	} else {
+		fmt.Println(magang)
+	}
+}
