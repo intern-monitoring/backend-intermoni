@@ -135,6 +135,33 @@ func GCFHandlerGetAllUserByAdmin(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname 
 	return GCFReturnStruct(data)
 }
 
+func GCFHandlerGetUserFromID(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	var Response model.User
+	tokenstring := r.Header.Get("Authorization")
+	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
+	if err != nil {
+		Response.Email = "Gagal Decode Token : " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	data, err := GetUserFromID(payload.Id, conn)
+	if err != nil {
+		Response.Email = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	return GCFReturnStruct(data)
+}
+
+// mahasiswa
+func GCFHandlerGetAllMahasiswa(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	data, err := GetAllMahasiswa(conn)
+	if err != nil {
+		return GCFReturnStruct(err)
+	}
+	return GCFReturnStruct(data)
+}
+
 // magang
 func GCFHandlerInsertMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
