@@ -30,9 +30,10 @@ type Mitra struct {
 	ID           	primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	NamaNarahubung  string             `bson:"namanarahubung,omitempty" json:"namanarahubung,omitempty"`
 	NoHpNarahubung  string             `bson:"nohpnarahubung,omitempty" json:"nohpnarahubung,omitempty"`
-	NamaResmi  		string             `bson:"namaresmi,omitempty" json:"namaresmi,omitempty"`
+	Nama	  		string             `bson:"nama,omitempty" json:"nama,omitempty"`
 	Kategori 		string             `bson:"kategori,omitempty" json:"kategori,omitempty"`
 	SektorIndustri 	string             `bson:"sektorindustri,omitempty" json:"sektorindustri,omitempty"`
+	Tentang		 	string             `bson:"tentang,omitempty" json:"tentang,omitempty"`
 	Alamat 			string             `bson:"alamat,omitempty" json:"alamat,omitempty"`
 	Website 		string             `bson:"website,omitempty" json:"website,omitempty"`
 	Akun     		User			   `bson:"akun,omitempty" json:"akun,omitempty"`
@@ -46,7 +47,6 @@ type Magang struct {
 	CreatedAt       		primitive.DateTime `bson:"createdat,omitempty" json:"createdat,omitempty"`
 	DeskripsiMagang  		string			   `bson:"deskripsimagang,omitempty" json:"deskripsimagang,omitempty"`
 	InfoTambahanMagang   	string			   `bson:"infotambahanmagang,omitempty" json:"infotambahanmagang,omitempty"`
-	TentangMitra		   	string			   `bson:"tentangmitra,omitempty" json:"tentangmitra,omitempty"`
 	Expired   				string			   `bson:"expired,omitempty" json:"expired,omitempty"`
 }
 
@@ -54,6 +54,7 @@ type Credential struct {
 	Status  bool   `json:"status" bson:"status"`
 	Token   string `json:"token,omitempty" bson:"token,omitempty"`
 	Message string `json:"message,omitempty" bson:"message,omitempty"`
+	Role	string `json:"role,omitempty" bson:"role,omitempty"`
 }
 
 type Payload struct {
