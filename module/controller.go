@@ -305,6 +305,20 @@ func GetUserFromEmail(email string, db *mongo.Database) (doc model.User, err err
 }
 
 // mahasiswa
+func GetAllMahasiswa(db *mongo.Database) (mahasiswa []model.Mahasiswa, err error) {
+	collection := db.Collection("mahasiswa")
+	filter := bson.M{}
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return mahasiswa, fmt.Errorf("error GetAllMahasiswa mongo: %s", err)
+	}
+	err = cursor.All(context.Background(), &mahasiswa)
+	if err != nil {
+		return mahasiswa, fmt.Errorf("error GetAllMahasiswa context: %s", err)
+	}
+	return mahasiswa, nil
+}
+
 func GetMahasiswaFromID(_id primitive.ObjectID, db *mongo.Database) (doc model.Mahasiswa, err error) {
 	collection := db.Collection("mahasiswa")
 	filter := bson.M{"_id": _id}
