@@ -60,7 +60,7 @@ func UpdateOneDoc(id primitive.ObjectID, db *mongo.Database, col string, doc int
 		return fmt.Errorf("error update: %v", err)
 	}
 	if result.ModifiedCount == 0 {
-		err = errors.New("Tidak ada data yang diubah")
+		err = fmt.Errorf("tidak ada data yang diubah")
 		return
 	}
 	return nil
@@ -138,7 +138,7 @@ func SignUpMahasiswa(db *mongo.Database, insertedDoc model.Mahasiswa) error {
 
 func SignUpMitra(db *mongo.Database, insertedDoc model.Mitra) error {
 	objectId := primitive.NewObjectID()
-	if insertedDoc.NamaNarahubung == "" || insertedDoc.NoHpNarahubung == "" || insertedDoc.NamaResmi == "" || insertedDoc.Kategori == "" || insertedDoc.SektorIndustri == "" || insertedDoc.Alamat == "" || insertedDoc.Website == "" || insertedDoc.Akun.Email == "" || insertedDoc.Akun.Password == "" {
+	if insertedDoc.NamaNarahubung == "" || insertedDoc.NoHpNarahubung == "" || insertedDoc.Nama == "" || insertedDoc.Kategori == "" || insertedDoc.SektorIndustri == "" || insertedDoc.Alamat == "" || insertedDoc.Website == "" || insertedDoc.Akun.Email == "" || insertedDoc.Akun.Password == "" {
 		return fmt.Errorf("mohon untuk melengkapi data")
 	} 
 	if err := checkmail.ValidateFormat(insertedDoc.Akun.Email); err != nil {
@@ -173,7 +173,7 @@ func SignUpMitra(db *mongo.Database, insertedDoc model.Mitra) error {
 	mitra := bson.M{
 		"namanarahubung": insertedDoc.NamaNarahubung,
 		"nohpnarahubung": insertedDoc.NoHpNarahubung,
-		"namaresmi": insertedDoc.NamaResmi,
+		"namaresmi": insertedDoc.Nama,
 		"kategori": insertedDoc.Kategori,
 		"sektorindustri": insertedDoc.SektorIndustri,
 		"alamat": insertedDoc.Alamat,
@@ -217,6 +217,59 @@ func LogIn(db *mongo.Database, insertedDoc model.User) (user model.User, err err
 }
 
 //user
+// func UpdateUser(idparam, iduser primitive.ObjectID, db *mongo.Database, insertedDoc model.User) error {
+// 	_, err := GetUserFromID(iduser, db)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	if insertedDoc.Email == "" || insertedDoc.Password == "" {
+// 		return fmt.Errorf("mohon untuk melengkapi data")
+// 	}
+// 	if err = checkmail.ValidateFormat(insertedDoc.Email); err != nil {
+// 		return fmt.Errorf("email tidak valid")
+// 	}
+// 	existsDoc, err := GetUserFromEmail(insertedDoc.Email, db)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	if existsDoc.Email == insertedDoc.Email {
+// 		return fmt.Errorf("email sudah terdaftar")
+// 	}
+// 	if insertedDoc.Confirmpassword != insertedDoc.Password {
+// 		return fmt.Errorf("konfirmasi password salah")
+// 	}
+// 	if strings.Contains(insertedDoc.Password, " ") {
+// 		return fmt.Errorf("password tidak boleh mengandung spasi")
+// 	}
+// 	if len(insertedDoc.Password) < 8 {
+// 		return fmt.Errorf("password terlalu pendek")
+// 	}
+// 	salt := make([]byte, 16)
+// 	_, err = rand.Read(salt)
+// 	if err != nil {
+// 		return fmt.Errorf("kesalahan server : salt")
+// 	}
+// 	hashedPassword := argon2.IDKey([]byte(insertedDoc.Password), salt, 1, 64*1024, 4, 32)
+// 	user := bson.M{
+
+// 	}
+// }
+
+func GetAllUser(db *mongo.Database) (user []model.User, err error) {
+	collection := db.Collection("user")
+	filter := bson.M{}
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return user, fmt.Errorf("error GetAllUser mongo: %s", err)
+	}
+	err = cursor.All(context.Background(), &user)
+	if err != nil {
+		return user, fmt.Errorf("error GetAllUser context: %s", err)
+	}
+	return user, nil
+
+}
+
 func GetUserFromID(_id primitive.ObjectID, db *mongo.Database) (doc model.User, err error) {
 	collection := db.Collection("user")
 	filter := bson.M{"_id": _id}
@@ -286,7 +339,7 @@ func GetMitraFromAkun(akun primitive.ObjectID, db *mongo.Database) (doc model.Mi
 
 // magang
 func InsertMagang(_id primitive.ObjectID, db *mongo.Database, insertedDoc model.Magang) error {
-	if insertedDoc.Posisi == "" || insertedDoc.Lokasi == "" || insertedDoc.DeskripsiMagang == "" || insertedDoc.InfoTambahanMagang == "" || insertedDoc.TentangMitra == "" || insertedDoc.Expired == "" {
+	if insertedDoc.Posisi == "" || insertedDoc.Lokasi == "" || insertedDoc.DeskripsiMagang == "" || insertedDoc.InfoTambahanMagang == "" || insertedDoc.Expired == "" {
 		return fmt.Errorf("mohon untuk melengkapi data")
 	}
 	mitra, err := GetMitraFromAkun(_id, db)
@@ -305,7 +358,6 @@ func InsertMagang(_id primitive.ObjectID, db *mongo.Database, insertedDoc model.
 		"createdat": primitive.NewDateTimeFromTime(time.Now().UTC()),
 		"deskripsimagang": insertedDoc.DeskripsiMagang,
 		"infotambahanmagang": insertedDoc.InfoTambahanMagang,
-		"tentangmitra": insertedDoc.TentangMitra,
 		"expired": insertedDoc.Expired,
 	}
 	_, err = InsertOneDoc(db, "magang", magang)
@@ -320,7 +372,7 @@ func UpdateMagang(idparam, iduser primitive.ObjectID, db *mongo.Database, insert
 	if err != nil {
 		return err
 	}
-	if insertedDoc.Posisi == "" || insertedDoc.Lokasi == "" || insertedDoc.DeskripsiMagang == "" || insertedDoc.InfoTambahanMagang == "" || insertedDoc.TentangMitra == "" || insertedDoc.Expired == "" {
+	if insertedDoc.Posisi == "" || insertedDoc.Lokasi == "" || insertedDoc.DeskripsiMagang == "" || insertedDoc.InfoTambahanMagang == "" || insertedDoc.Expired == "" {
 		return fmt.Errorf("mohon untuk melengkapi data")
 	}
 	mitra, err := GetMitraFromAkun(iduser, db)
@@ -338,7 +390,6 @@ func UpdateMagang(idparam, iduser primitive.ObjectID, db *mongo.Database, insert
 		"lokasi": insertedDoc.Lokasi,
 		"deskripsimagang": insertedDoc.DeskripsiMagang,
 		"infotambahanmagang": insertedDoc.InfoTambahanMagang,
-		"tentangmitra": insertedDoc.TentangMitra,
 		"expired": insertedDoc.Expired,
 	}
 	err = UpdateOneDoc(idparam, db, "magang", magang)
