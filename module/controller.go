@@ -217,7 +217,7 @@ func LogIn(db *mongo.Database, insertedDoc model.User) (user model.User, err err
 }
 
 //user
-func UpdateUser(idparam, iduser primitive.ObjectID, db *mongo.Database, insertedDoc model.User) error {
+func UpdateUser(iduser primitive.ObjectID, db *mongo.Database, insertedDoc model.User) error {
 	dataUser, err := GetUserFromID(iduser, db)
 	if err != nil {
 		return err
@@ -256,7 +256,7 @@ func UpdateUser(idparam, iduser primitive.ObjectID, db *mongo.Database, inserted
 		"salt": hex.EncodeToString(salt),
 		"role": dataUser.Role,
 	}
-	err = UpdateOneDoc(idparam, db, "user", user)
+	err = UpdateOneDoc(iduser, db, "user", user)
 	if err != nil {
 		return err
 	}
