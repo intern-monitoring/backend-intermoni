@@ -86,6 +86,33 @@ func GCFHandlerGetAll(MONGOCONNSTRINGENV, dbname, col string, docs interface{}) 
 }
 
 // user
+func GCFHandlerUpdateUser(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	var Response model.Credential
+	Response.Status = false
+	tokenstring := r.Header.Get("Authorization")
+	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
+	if err != nil {
+		Response.Message = "Gagal Decode Token : " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	var datauser model.User
+	err = json.NewDecoder(r.Body).Decode(&datauser)
+	if err != nil {
+		Response.Message = "error parsing application/json: " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	err = UpdateUser(payload.Id, conn, datauser)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	Response.Status = true
+	Response.Message = "Berhasil Update User"
+	return GCFReturnStruct(Response)
+
+}
+
 func GCFHandlerGetAllUserByAdmin(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	var Response model.Credential
