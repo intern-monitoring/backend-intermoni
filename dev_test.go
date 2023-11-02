@@ -29,9 +29,7 @@ func TestInsertOneMagang(t *testing.T) {
    doc.Lokasi = "Bandung"
    doc.DeskripsiMagang = "<div><ul><li>Mengurus administrasi bagian marketing</li><li>Membuat Sales Order,membuat Penawaran Harga</li><li>Menerima Purchase Order (PO) Customer</li><li>Membina hubungan baik antara Mitra dan Customer</li><li>Bisa bekerja secara akurat dan memperhatikan detail sehingga bisa memproses pesanan dengan cepat dan efisien</li><li>Jujur, pekerja keras,ulet,tekun,bertanggung jawab,punya komitmen yang tinggi, percaya diri, memiliki kemampuan komunikasi yang baik</li></ul></div>"
    doc.InfoTambahanMagang = "<div><ul><li>Pengalaman 3 tahun kerja</li><li>Pegawai tetap</li></ul></div>"
-   doc.TentangMitra = "<div>Ford Motor Company (commonly known as Ford) is an American multinational automobile manufacturer headquartered in Dearborn, Michigan, United States. It was founded by Henry Ford and incorporated on June 16, 1903. The company sells automobiles and commercial vehicles under the Ford brand, and luxury cars under its Lincoln brand.</div>"
-//    doc.InfoTambahanMitra = "<div><ul><li>1000-2000 Pekerja</li><li>Industri Manufaktur/Produksi</li></ul></div>"
-   if  doc.Posisi == "" || doc.Lokasi == "" || doc.DeskripsiMagang == "" || doc.InfoTambahanMagang == "" || doc.TentangMitra == "" {
+   if  doc.Posisi == "" || doc.Lokasi == "" || doc.DeskripsiMagang == "" || doc.InfoTambahanMagang == "" {
 	   t.Errorf("mohon untuk melengkapi data")
    } else {
 	   insertedID, err := module.InsertOneDoc(db, "magang", doc)
@@ -112,7 +110,7 @@ func TestSignUpMitra(t *testing.T) {
 	var doc model.Mitra
 	doc.NamaNarahubung = "Dimas Ardianto"
 	doc.NoHpNarahubung = "085728980009"
-	doc.NamaResmi = "PT. Mundur Maju"
+	doc.Nama = "PT. Mundur Maju"
 	doc.Kategori = "BUMN"
 	doc.SektorIndustri = "Teknologi Informasi"
 	doc.Alamat = "Jl. Sariasih 3"
@@ -124,7 +122,7 @@ func TestSignUpMitra(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error inserting document: %v", err)
 	} else {
-	fmt.Println("Data berhasil disimpan dengan nama :", doc.NamaResmi)
+	fmt.Println("Data berhasil disimpan dengan nama :", doc.Nama)
 	}
 }
 
@@ -248,7 +246,6 @@ func TestInsertMagang(t *testing.T) {
 	datamagang.Lokasi = "Bandung"
 	datamagang.DeskripsiMagang = "<div><ul><li>Mengurus administrasi bagian marketing</li><li>Membuat Sales Order,membuat Penawaran Harga</li><li>Menerima Purchase Order (PO) Customer</li><li>Membina hubungan baik antara Mitra dan Customer</li><li>Bisa bekerja secara akurat dan memperhatikan detail sehingga bisa memproses pesanan dengan cepat dan efisien</li><li>Jujur, pekerja keras,ulet,tekun,bertanggung jawab,punya komitmen yang tinggi, percaya diri, memiliki kemampuan komunikasi yang baik</li></ul></div>"
 	datamagang.InfoTambahanMagang = "<div><ul><li>Pengalaman 3 tahun kerja</li><li>Pegawai tetap</li></ul></div>"
-	datamagang.TentangMitra = "<div>Ford Motor Company (commonly known as Ford) is an American multinational automobile manufacturer headquartered in Dearborn, Michigan, United States. It was founded by Henry Ford and incorporated on June 16, 1903. The company sells automobiles and commercial vehicles under the Ford brand, and luxury cars under its Lincoln brand.</div>"
 	datamagang.Expired = "01-11-2023"
 	err = module.InsertMagang(payload.Id, conn, datamagang)
 	if err != nil {
@@ -273,7 +270,6 @@ func TestUpdateMagang(t *testing.T) {
 	datamagang.Lokasi = "Bandung"
 	datamagang.DeskripsiMagang = "<div><ul><li>Mengurus administrasi bagian marketing</li><li>Membuat Sales Order,membuat Penawaran Harga</li><li>Menerima Purchase Order (PO) Customer</li><li>Membina hubungan baik antara Mitra dan Customer</li><li>Bisa bekerja secara akurat dan memperhatikan detail sehingga bisa memproses pesanan dengan cepat dan efisien</li><li>Jujur, pekerja keras,ulet,tekun,bertanggung jawab,punya komitmen yang tinggi, percaya diri, memiliki kemampuan komunikasi yang baik</li></ul></div>"
 	datamagang.InfoTambahanMagang = "<div><ul><li>Pengalaman 3 tahun kerja</li><li>Pegawai tetap</li></ul></div>"
-	datamagang.TentangMitra = "<div>Ford Motor Company (commonly known as Ford) is an American multinational automobile manufacturer headquartered in Dearborn, Michigan, United States. It was founded by Henry Ford and incorporated on June 16, 1903. The company sells automobiles and commercial vehicles under the Ford brand, and luxury cars under its Lincoln brand.</div>"
 	datamagang.Expired = "01-11-2023"
 	id := "65406377996edfaee3ed9a19"
 	objectId, err := primitive.ObjectIDFromHex(id)
