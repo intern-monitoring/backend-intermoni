@@ -46,7 +46,7 @@ func GCFHandlerSignUpMitra(MONGOCONNSTRINGENV, dbname string, r *http.Request) s
 		return GCFReturnStruct(Response)
 	}
 	Response.Status = true
-	Response.Message = "Halo " + datamitra.NamaResmi
+	Response.Message = "Halo " + datamitra.Nama
 	return GCFReturnStruct(Response)
 }
 
@@ -73,6 +73,7 @@ func GCFHandlerLogin(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname string, r *
 	} else {
 		Response.Message = "Selamat Datang " + user.Email
 		Response.Token = tokenstring
+		Response.Role = user.Role
 	}
 	return GCFReturnStruct(Response)
 }
@@ -81,6 +82,29 @@ func GCFHandlerLogin(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname string, r *
 func GCFHandlerGetAll(MONGOCONNSTRINGENV, dbname, col string, docs interface{}) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	data := GetAllDocs(conn, col, docs)
+	return GCFReturnStruct(data)
+}
+
+// user
+func GCFHandlerGetAllUserByAdmin(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	var Response model.Credential
+	Response.Status = false
+	tokenstring := r.Header.Get("Authorization")
+	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
+	if err != nil {
+		Response.Message = "Gagal Decode Token : " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	if payload.Role != "admin" {
+		Response.Message = "Kamuh bukan admin"
+		return GCFReturnStruct(Response)
+	}
+	data, err := GetAllUser(conn)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
 	return GCFReturnStruct(data)
 }
 
@@ -245,7 +269,7 @@ func GCFHandlerGetMagangFromID(MONGOCONNSTRINGENV, dbname string, r *http.Reques
 	return GCFReturnStruct(data)
 }
 
-func GFCHandlerGetMagangFromIDByMitra(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) {
+func GCFHandlerGetMagangFromIDByMitra(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	var Response model.Credential
 	Response.Status = false
@@ -274,7 +298,7 @@ func GFCHandlerGetMagangFromIDByMitra(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, db
 		Response.Message = err.Error()
 		GCFReturnStruct(Response)
 	}
-	GCFReturnStruct(data)
+	return GCFReturnStruct(data)
 
 }
 
