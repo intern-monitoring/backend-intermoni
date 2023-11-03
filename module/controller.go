@@ -374,6 +374,36 @@ func GetMahasiswaFromAkun(akun primitive.ObjectID, db *mongo.Database) (doc mode
 }
 
 // mitra
+func UpdateMitra(idparam, iduser primitive.ObjectID, db *mongo.Database, insertedDoc model.Mitra) error {
+	mitra, err := GetMitraFromAkun(iduser, db)
+	if err != nil {
+		return err
+	}
+	if mitra.ID != idparam {
+		return fmt.Errorf("kamu bukan pemilik data ini")
+	}
+	if insertedDoc.NamaNarahubung == "" || insertedDoc.NoHpNarahubung == "" || insertedDoc.Nama == "" || insertedDoc.Kategori == "" || insertedDoc.SektorIndustri == "" || insertedDoc.Alamat == "" || insertedDoc.Website == "" {
+		return fmt.Errorf("mohon untuk melengkapi data")
+	}
+	mtr := bson.M{
+		"namanarahubung": insertedDoc.NamaNarahubung,
+		"nohpnarahubung": insertedDoc.NoHpNarahubung,
+		"namaresmi": insertedDoc.Nama,
+		"kategori": insertedDoc.Kategori,
+		"sektorindustri": insertedDoc.SektorIndustri,
+		"alamat": insertedDoc.Alamat,
+		"website": insertedDoc.Website,
+		"akun": model.User {
+			ID : mitra.Akun.ID,
+		},
+	}
+	err = UpdateOneDoc(idparam, db, "mitra", mtr)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func GetAllMitra(db *mongo.Database) (mitra []model.Mitra, err error) {
 	collection := db.Collection("mitra")
 	filter := bson.M{}
