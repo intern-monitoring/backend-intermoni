@@ -275,7 +275,6 @@ func GetAllUser(db *mongo.Database) (user []model.User, err error) {
 		return user, fmt.Errorf("error GetAllUser context: %s", err)
 	}
 	return user, nil
-
 }
 
 func GetUserFromID(_id primitive.ObjectID, db *mongo.Database) (doc model.User, err error) {
@@ -305,6 +304,10 @@ func GetUserFromEmail(email string, db *mongo.Database) (doc model.User, err err
 }
 
 // mahasiswa
+// func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, insertedDoc model.Mahasiswa) error {
+// 	mahasiswa, err := GetMahasiswaFromAkun(iduser, db)
+// }
+
 func GetAllMahasiswa(db *mongo.Database) (mahasiswa []model.Mahasiswa, err error) {
 	collection := db.Collection("mahasiswa")
 	filter := bson.M{}
@@ -328,6 +331,19 @@ func GetMahasiswaFromID(_id primitive.ObjectID, db *mongo.Database) (doc model.M
 			return doc, fmt.Errorf("no data found for ID %s", _id)
 		}
 		return doc, fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
+	}
+	return doc, nil
+}
+
+func GetMahasiswaFromAkun(akun primitive.ObjectID, db *mongo.Database) (doc model.Mahasiswa, err error) {
+	collection := db.Collection("mahasiswa")
+	filter := bson.M{"akun._id": akun}
+	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return doc, fmt.Errorf("mahasiswa tidak ditemukan")
+		}
+		return doc, fmt.Errorf("kesalahan server")
 	}
 	return doc, nil
 }
