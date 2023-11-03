@@ -323,7 +323,7 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, ins
 		"perguruantinggi": insertedDoc.PerguruanTinggi,
 		"prodi": insertedDoc.Prodi,
 		"akun": model.User {
-			ID : iduser,
+			ID : mahasiswa.Akun.ID,
 		},
 	}
 	err = UpdateOneDoc(idparam, db, "mahasiswa", mhs)
@@ -374,6 +374,20 @@ func GetMahasiswaFromAkun(akun primitive.ObjectID, db *mongo.Database) (doc mode
 }
 
 // mitra
+func GetAllMitra(db *mongo.Database) (mitra []model.Mitra, err error) {
+	collection := db.Collection("mitra")
+	filter := bson.M{}
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return mitra, fmt.Errorf("error GetAllMitra mongo: %s", err)
+	}
+	err = cursor.All(context.Background(), &mitra)
+	if err != nil {
+		return mitra, fmt.Errorf("error GetAllMitra context: %s", err)
+	}
+	return mitra, nil
+}
+
 func GetMitraFromID(_id primitive.ObjectID, db *mongo.Database) (doc model.Mitra, err error) {
 	collection := db.Collection("mitra")
 	filter := bson.M{"_id": _id}
