@@ -304,9 +304,34 @@ func GetUserFromEmail(email string, db *mongo.Database) (doc model.User, err err
 }
 
 // mahasiswa
-// func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, insertedDoc model.Mahasiswa) error {
-// 	mahasiswa, err := GetMahasiswaFromAkun(iduser, db)
-// }
+func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, insertedDoc model.Mahasiswa) error {
+	mahasiswa, err := GetMahasiswaFromAkun(iduser, db)
+	if err != nil {
+		return err
+	}
+	if mahasiswa.ID != idparam {
+		return fmt.Errorf("kamu bukan pemilik data ini")
+	}
+	if insertedDoc.NamaLengkap == "" || insertedDoc.TanggalLahir == "" || insertedDoc.JenisKelamin == "" || insertedDoc.NIM == "" || insertedDoc.PerguruanTinggi == "" || insertedDoc.Prodi == "" {
+		return fmt.Errorf("mohon untuk melengkapi data")
+	}
+	mhs := bson.M{
+		"namalengkap": insertedDoc.NamaLengkap,
+		"tanggallahir": insertedDoc.TanggalLahir,
+		"jeniskelamin": insertedDoc.JenisKelamin,
+		"nim": insertedDoc.NIM,
+		"perguruantinggi": insertedDoc.PerguruanTinggi,
+		"prodi": insertedDoc.Prodi,
+		"akun": model.User {
+			ID : iduser,
+		},
+	}
+	err = UpdateOneDoc(idparam, db, "mahasiswa", mhs)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 func GetAllMahasiswa(db *mongo.Database) (mahasiswa []model.Mahasiswa, err error) {
 	collection := db.Collection("mahasiswa")
