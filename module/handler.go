@@ -12,7 +12,7 @@ import (
 // signup
 func GCFHandlerSignUpMahasiswa(MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var Response model.Credential
+	var Response model.Response
 	Response.Status = false
 	var datamahasiswa model.Mahasiswa
 	err := json.NewDecoder(r.Body).Decode(&datamahasiswa)
@@ -32,7 +32,7 @@ func GCFHandlerSignUpMahasiswa(MONGOCONNSTRINGENV, dbname string, r *http.Reques
 
 func GCFHandlerSignUpMitra(MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var Response model.Credential
+	var Response model.Response
 	Response.Status = false
 	var datamitra model.Mitra
 	err := json.NewDecoder(r.Body).Decode(&datamitra)
@@ -88,7 +88,7 @@ func GCFHandlerGetAll(MONGOCONNSTRINGENV, dbname, col string, docs interface{}) 
 // user
 func GCFHandlerUpdateUser(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var Response model.Credential
+	var Response model.Response
 	Response.Status = false
 	tokenstring := r.Header.Get("Authorization")
 	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
@@ -110,12 +110,11 @@ func GCFHandlerUpdateUser(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string,
 	Response.Status = true
 	Response.Message = "Berhasil Update User"
 	return GCFReturnStruct(Response)
-
 }
 
 func GCFHandlerGetAllUserByAdmin(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var Response model.Credential
+	var Response model.Response
 	Response.Status = false
 	tokenstring := r.Header.Get("Authorization")
 	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
@@ -135,29 +134,220 @@ func GCFHandlerGetAllUserByAdmin(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname 
 	return GCFReturnStruct(data)
 }
 
-func GCFHandlerGetUserFromID(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+func GCFHandlerGetUserFromIDByAdmin(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var Response model.User
+	var Response model.Response
+	Response.Status = false
 	tokenstring := r.Header.Get("Authorization")
 	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
 	if err != nil {
-		Response.Email = "Gagal Decode Token : " + err.Error()
+		Response.Message = "Gagal Decode Token : " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	if payload.Role != "admin" {
+		Response.Message = "Kamuh bukan admin"
+		return GCFReturnStruct(Response)
+	}
+	id := GetID(r)
+	if id == "" {
+		GCFHandlerGetAllUserByAdmin(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname, r)
+	}
+	idparam, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		Response.Message = "Invalid id parameter"
+		GCFReturnStruct(Response)
+	}
+	data, err := GetUserFromID(idparam, conn)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	if data.Role == "mahasiswa" {
+		datamahasiswa, err := GetMahasiswaFromAkun(data.ID, conn)
+		if err != nil {
+			Response.Message = err.Error()
+			return GCFReturnStruct(Response)
+		}
+		datamahasiswa.Akun = data
+		return GCFReturnStruct(datamahasiswa) 
+	}
+	if data.Role == "mitra" {
+		datamitra, err := GetMitraFromAkun(data.ID, conn)
+		if err != nil {
+			Response.Message = err.Error()
+			return GCFReturnStruct(Response)
+		}
+		datamitra.Akun = data
+		return GCFReturnStruct(datamitra) 
+	}
+	Response.Message = "Tidak ada data"
+	return GCFReturnStruct(Response)
+}
+
+func GCFHandlerGetUserFromID(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	var Response model.Response
+	Response.Status = false
+	tokenstring := r.Header.Get("Authorization")
+	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
+	if err != nil {
+		Response.Message = "Gagal Decode Token : " + err.Error()
 		return GCFReturnStruct(Response)
 	}
 	data, err := GetUserFromID(payload.Id, conn)
 	if err != nil {
-		Response.Email = err.Error()
+		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
 	return GCFReturnStruct(data)
 }
 
 // mahasiswa
-func GCFHandlerGetAllMahasiswa(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+func GCFHandlerUpdateMahasiswa(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	var Response model.Response
+	Response.Status = false
+	tokenstring := r.Header.Get("Authorization")
+	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
+	if err != nil {
+		Response.Message = "Gagal Decode Token : " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	if payload.Role != "mahasiswa" {
+		Response.Message = "Maneh tidak memiliki akses"
+		return GCFReturnStruct(Response)
+	}
+	id := GetID(r)
+	if id == "" {
+		Response.Message = "Wrong parameter"
+		GCFReturnStruct(Response)
+	}
+	idparam, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		Response.Message = "Invalid id parameter"
+		GCFReturnStruct(Response)
+	}
+	var datamahasiswa model.Mahasiswa
+	err = json.NewDecoder(r.Body).Decode(&datamahasiswa)
+	if err != nil {
+		Response.Message = "error parsing application/json: " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	err = UpdateMahasiswa(idparam, payload.Id, conn, datamahasiswa)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	Response.Status = true
+	Response.Message = "Berhasil Update Mahasiswa"
+	return GCFReturnStruct(Response)
+}
+
+func GCFHandlerGetAllMahasiswa(MONGOCONNSTRINGENV, dbname string) string {
+	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	var Response model.Response
+	Response.Status = false
 	data, err := GetAllMahasiswa(conn)
 	if err != nil {
-		return GCFReturnStruct(err)
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	return GCFReturnStruct(data)
+}
+
+func GCFHandlerGetMahasiswaFromID(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	var Response model.Response
+	Response.Status = false
+	tokenstring := r.Header.Get("Authorization")
+	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	if payload.Role != "mahasiswa" {
+		Response.Message = "Maneh bukan mahasiswa"
+		return GCFReturnStruct(Response)
+	}
+	data, err := GetMahasiswaFromAkun(payload.Id, conn)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	return GCFReturnStruct(data)
+}
+
+// mitra
+func GCFHandlerUpdateMitra(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	var Response model.Response
+	Response.Status = false
+	tokenstring := r.Header.Get("Authorization")
+	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
+	if err != nil {
+		Response.Message = "Gagal Decode Token : " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	if payload.Role != "mitra" {
+		Response.Message = "Maneh tidak memiliki akses"
+		return GCFReturnStruct(Response)
+	}
+	id := GetID(r)
+	if id == "" {
+		Response.Message = "Wrong parameter"
+		GCFReturnStruct(Response)
+	}
+	idparam, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		Response.Message = "Invalid id parameter"
+		GCFReturnStruct(Response)
+	}
+	var datamitra model.Mitra
+	err = json.NewDecoder(r.Body).Decode(&datamitra)
+	if err != nil {
+		Response.Message = "error parsing application/json: " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	err = UpdateMitra(idparam, payload.Id, conn, datamitra)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	Response.Status = true
+	Response.Message = "Berhasil Update Mitra"
+	return GCFReturnStruct(Response)
+}
+
+func GCFHandlerGetAllMitra(MONGOCONNSTRINGENV, dbname string) string {
+	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	var Response model.Response
+	Response.Status = false
+	data, err := GetAllMitra(conn)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	return GCFReturnStruct(data)
+}
+
+func GCFHandlerGetMitraFromID(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	var Response model.Response
+	Response.Status = false
+	tokenstring := r.Header.Get("Authorization")
+	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	if payload.Role != "mitra" {
+		Response.Message = "Maneh bukan mitra"
+		return GCFReturnStruct(Response)
+	}
+	data, err := GetMitraFromAkun(payload.Id, conn)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
 	}
 	return GCFReturnStruct(data)
 }
@@ -165,7 +355,7 @@ func GCFHandlerGetAllMahasiswa(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname st
 // magang
 func GCFHandlerInsertMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var Response model.Credential
+	var Response model.Response
 	Response.Status = false
 	tokenstring := r.Header.Get("Authorization")
 	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
@@ -195,7 +385,7 @@ func GCFHandlerInsertMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname strin
 
 func GCFHandlerUpdateMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var Response model.Credential
+	var Response model.Response
 	Response.Status = false
 	tokenstring := r.Header.Get("Authorization")
 	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
@@ -207,7 +397,7 @@ func GCFHandlerUpdateMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname strin
 		Response.Message = "Maneh tidak memiliki akses"
 		return GCFReturnStruct(Response)
 	}
-	id := r.URL.Query().Get("id")
+	id := GetID(r)
 	if id == "" {
 		Response.Message = "Wrong parameter"
 		GCFReturnStruct(Response)
@@ -235,7 +425,7 @@ func GCFHandlerUpdateMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname strin
 
 func GCFHandlerDeleteMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var Response model.Credential
+	var Response model.Response
 	Response.Status = false
 	tokenstring := r.Header.Get("Authorization")
 	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
@@ -247,7 +437,7 @@ func GCFHandlerDeleteMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname strin
 		Response.Message = "Maneh tidak memiliki akses"
 		return GCFReturnStruct(Response)
 	}
-	id := r.URL.Query().Get("id")
+	id := GetID(r)
 	if id == "" {
 		Response.Message = "Wrong parameter"
 		GCFReturnStruct(Response)
@@ -269,7 +459,7 @@ func GCFHandlerDeleteMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname strin
 
 func GCFHandlerGetAllMagang(MONGOCONNSTRINGENV, dbname string) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var Response model.Credential
+	var Response model.Response
 	Response.Status = false
 	data, err := GetAllMagang(conn)
 	if err != nil {
@@ -281,7 +471,7 @@ func GCFHandlerGetAllMagang(MONGOCONNSTRINGENV, dbname string) string {
 
 func GCFHandlerGetMagangFromMitra(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var Response model.Credential
+	var Response model.Response
 	Response.Status = false
 	tokenstring := r.Header.Get("Authorization")
 	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
@@ -303,12 +493,11 @@ func GCFHandlerGetMagangFromMitra(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname
 
 func GCFHandlerGetMagangFromID(MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var Response model.Credential
+	var Response model.Response
 	Response.Status = false
-	id := r.URL.Query().Get("id")
+	id := GetID(r)
 	if id == "" {
-		Response.Message = "Wrong parameter"
-		return GCFReturnStruct(Response)
+		GCFHandlerGetAllMagang(MONGOCONNSTRINGENV, dbname)
 	}
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -325,7 +514,7 @@ func GCFHandlerGetMagangFromID(MONGOCONNSTRINGENV, dbname string, r *http.Reques
 
 func GCFHandlerGetMagangFromIDByMitra(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var Response model.Credential
+	var Response model.Response
 	Response.Status = false
 	tokenstring := r.Header.Get("Authorization")
 	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
@@ -337,10 +526,9 @@ func GCFHandlerGetMagangFromIDByMitra(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, db
 		Response.Message = "Kamuh bukan Mitra"
 		GCFReturnStruct(Response)
 	}
-	id := r.URL.Query().Get("id")
+	id := GetID(r)
 	if id == "" {
-		Response.Message = "Wrong parameter"
-		GCFReturnStruct(Response)
+		GCFHandlerGetMagangFromMitra(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname, r)
 	}
 	idparam, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -353,11 +541,15 @@ func GCFHandlerGetMagangFromIDByMitra(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, db
 		GCFReturnStruct(Response)
 	}
 	return GCFReturnStruct(data)
-
 }
 
 // return struct
 func GCFReturnStruct(DataStuct any) string {
 	jsondata, _ := json.Marshal(DataStuct)
 	return string(jsondata)
+}
+
+// get id
+func GetID(r *http.Request) string {
+    return r.URL.Query().Get("id")
 }

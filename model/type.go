@@ -57,6 +57,11 @@ type Credential struct {
 	Role	string `json:"role,omitempty" bson:"role,omitempty"`
 }
 
+type Response struct {
+	Status  bool   `json:"status" bson:"status"`
+	Message string `json:"message,omitempty" bson:"message,omitempty"`
+}
+
 type Payload struct {
 	Id           	primitive.ObjectID `json:"id"`
 	Role           	string			   `json:"role"`
