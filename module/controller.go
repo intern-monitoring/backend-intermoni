@@ -123,7 +123,9 @@ func SignUpMahasiswa(db *mongo.Database, insertedDoc model.Mahasiswa) error {
 		"nim": insertedDoc.NIM,
 		"perguruantinggi": insertedDoc.PerguruanTinggi,
 		"prodi": insertedDoc.Prodi,
-		"akun": objectId,
+		"akun": model.User {
+			ID : objectId,
+		},
 	}
 	_, err = InsertOneDoc(db, "user", user)
 	if err != nil {
@@ -138,7 +140,7 @@ func SignUpMahasiswa(db *mongo.Database, insertedDoc model.Mahasiswa) error {
 
 func SignUpMitra(db *mongo.Database, insertedDoc model.Mitra) error {
 	objectId := primitive.NewObjectID()
-	if insertedDoc.NamaNarahubung == "" || insertedDoc.NoHpNarahubung == "" || insertedDoc.Nama == "" || insertedDoc.Kategori == "" || insertedDoc.SektorIndustri == "" || insertedDoc.Alamat == "" || insertedDoc.Website == "" || insertedDoc.Akun.Email == "" || insertedDoc.Akun.Password == "" {
+	if insertedDoc.NamaNarahubung == "" || insertedDoc.NoHpNarahubung == "" || insertedDoc.Nama == "" || insertedDoc.Kategori == "" || insertedDoc.SektorIndustri == "" || insertedDoc.Tentang == "" || insertedDoc.Alamat == "" || insertedDoc.Website == "" || insertedDoc.Akun.Email == "" || insertedDoc.Akun.Password == "" {
 		return fmt.Errorf("mohon untuk melengkapi data")
 	} 
 	if err := checkmail.ValidateFormat(insertedDoc.Akun.Email); err != nil {
@@ -173,9 +175,10 @@ func SignUpMitra(db *mongo.Database, insertedDoc model.Mitra) error {
 	mitra := bson.M{
 		"namanarahubung": insertedDoc.NamaNarahubung,
 		"nohpnarahubung": insertedDoc.NoHpNarahubung,
-		"namaresmi": insertedDoc.Nama,
+		"nama": insertedDoc.Nama,
 		"kategori": insertedDoc.Kategori,
 		"sektorindustri": insertedDoc.SektorIndustri,
+		"tentang": insertedDoc.Tentang,
 		"alamat": insertedDoc.Alamat,
 		"website": insertedDoc.Website,
 		"akun": model.User {
@@ -228,10 +231,7 @@ func UpdateUser(iduser primitive.ObjectID, db *mongo.Database, insertedDoc model
 	if err = checkmail.ValidateFormat(insertedDoc.Email); err != nil {
 		return fmt.Errorf("email tidak valid")
 	}
-	existsDoc, err := GetUserFromEmail(insertedDoc.Email, db)
-	if err != nil {
-		return err
-	}
+	existsDoc, _ := GetUserFromEmail(insertedDoc.Email, db)
 	if existsDoc.Email == insertedDoc.Email {
 		return fmt.Errorf("email sudah terdaftar")
 	}
@@ -388,9 +388,10 @@ func UpdateMitra(idparam, iduser primitive.ObjectID, db *mongo.Database, inserte
 	mtr := bson.M{
 		"namanarahubung": insertedDoc.NamaNarahubung,
 		"nohpnarahubung": insertedDoc.NoHpNarahubung,
-		"namaresmi": insertedDoc.Nama,
+		"nama": insertedDoc.Nama,
 		"kategori": insertedDoc.Kategori,
 		"sektorindustri": insertedDoc.SektorIndustri,
+		"tentang": insertedDoc.Tentang,
 		"alamat": insertedDoc.Alamat,
 		"website": insertedDoc.Website,
 		"akun": model.User {

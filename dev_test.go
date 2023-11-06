@@ -89,13 +89,13 @@ func TestGetAllDoc(t *testing.T) {
 
 func TestSignUpMahasiswa(t *testing.T) {
 	var doc model.Mahasiswa
-	doc.NamaLengkap = "Erdito Nausha Adam"
+	doc.NamaLengkap = "Adit Nausha Adam"
 	doc.TanggalLahir = "20/05/2001"
 	doc.JenisKelamin = "Laki-laki"
 	doc.NIM = "1214031"
 	doc.PerguruanTinggi = "Universitas Logistik dan Bisnis Internasional"
 	doc.Prodi = "D4 Teknik Informatika"
-	doc.Akun.Email = "erdito2@gmail.com"
+	doc.Akun.Email = "adit@gmail.com"
 	doc.Akun.Password = "fghjkliow"
 	doc.Akun.Confirmpassword = "fghjkliow"
 	err := module.SignUpMahasiswa(db, doc)

@@ -134,7 +134,7 @@ func GCFHandlerGetAllUserByAdmin(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname 
 	return GCFReturnStruct(data)
 }
 
-func GCFHandlerGetUserFromIDByAdmin(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+func GCFHandlerGetUser(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	var Response model.Response
 	Response.Status = false
@@ -145,17 +145,16 @@ func GCFHandlerGetUserFromIDByAdmin(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbna
 		return GCFReturnStruct(Response)
 	}
 	if payload.Role != "admin" {
-		Response.Message = "Kamuh bukan admin"
-		return GCFReturnStruct(Response)
+		return GCFHandlerGetUserFromID(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname, r)
 	}
 	id := GetID(r)
 	if id == "" {
-		GCFHandlerGetAllUserByAdmin(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname, r)
+		return GCFHandlerGetAllUserByAdmin(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname, r)
 	}
 	idparam, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		Response.Message = "Invalid id parameter"
-		GCFReturnStruct(Response)
+		return GCFReturnStruct(Response)
 	}
 	data, err := GetUserFromID(idparam, conn)
 	if err != nil {
@@ -220,12 +219,12 @@ func GCFHandlerUpdateMahasiswa(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname st
 	id := GetID(r)
 	if id == "" {
 		Response.Message = "Wrong parameter"
-		GCFReturnStruct(Response)
+		return GCFReturnStruct(Response)
 	}
 	idparam, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		Response.Message = "Invalid id parameter"
-		GCFReturnStruct(Response)
+		return GCFReturnStruct(Response)
 	}
 	var datamahasiswa model.Mahasiswa
 	err = json.NewDecoder(r.Body).Decode(&datamahasiswa)
@@ -295,12 +294,12 @@ func GCFHandlerUpdateMitra(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string
 	id := GetID(r)
 	if id == "" {
 		Response.Message = "Wrong parameter"
-		GCFReturnStruct(Response)
+		return GCFReturnStruct(Response)
 	}
 	idparam, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		Response.Message = "Invalid id parameter"
-		GCFReturnStruct(Response)
+		return GCFReturnStruct(Response)
 	}
 	var datamitra model.Mitra
 	err = json.NewDecoder(r.Body).Decode(&datamitra)
@@ -400,12 +399,12 @@ func GCFHandlerUpdateMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname strin
 	id := GetID(r)
 	if id == "" {
 		Response.Message = "Wrong parameter"
-		GCFReturnStruct(Response)
+		return GCFReturnStruct(Response)
 	}
 	idparam, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		Response.Message = "Invalid id parameter"
-		GCFReturnStruct(Response)
+		return GCFReturnStruct(Response)
 	}
 	var datamagang model.Magang
 	err = json.NewDecoder(r.Body).Decode(&datamagang)
@@ -440,12 +439,12 @@ func GCFHandlerDeleteMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname strin
 	id := GetID(r)
 	if id == "" {
 		Response.Message = "Wrong parameter"
-		GCFReturnStruct(Response)
+		return GCFReturnStruct(Response)
 	}
 	idparam, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		Response.Message = "Invalid id parameter"
-		GCFReturnStruct(Response)
+		return GCFReturnStruct(Response)
 	}
 	err = DeleteMagang(idparam, payload.Id, conn)
 	if err != nil {
@@ -462,6 +461,27 @@ func GCFHandlerGetAllMagang(MONGOCONNSTRINGENV, dbname string) string {
 	var Response model.Response
 	Response.Status = false
 	data, err := GetAllMagang(conn)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	return GCFReturnStruct(data)
+}
+
+func GCFHandlerGetMagangFromID(MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	var Response model.Response
+	Response.Status = false
+	id := GetID(r)
+	if id == "" {
+		return GCFHandlerGetAllMagang(MONGOCONNSTRINGENV, dbname)
+	}
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		Response.Message = "Invalid id parameter"
+		return GCFReturnStruct(Response)
+	}
+	data, err := GetMagangFromID(objID, conn)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
@@ -491,28 +511,7 @@ func GCFHandlerGetMagangFromMitra(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname
 	return GCFReturnStruct(data)
 }
 
-func GCFHandlerGetMagangFromID(MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
-	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var Response model.Response
-	Response.Status = false
-	id := GetID(r)
-	if id == "" {
-		GCFHandlerGetAllMagang(MONGOCONNSTRINGENV, dbname)
-	}
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		Response.Message = "Invalid id parameter"
-		return GCFReturnStruct(Response)
-	}
-	data, err := GetMagangFromID(objID, conn)
-	if err != nil {
-		Response.Message = err.Error()
-		return GCFReturnStruct(Response)
-	}
-	return GCFReturnStruct(data)
-}
-
-func GCFHandlerGetMagangFromIDByMitra(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+func GCFHandlerGetMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	var Response model.Response
 	Response.Status = false
@@ -520,25 +519,24 @@ func GCFHandlerGetMagangFromIDByMitra(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, db
 	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
 	if err != nil {
 		Response.Message = "Gagal Decode Token : " + err.Error()
-		GCFReturnStruct(Response)
+		return GCFReturnStruct(Response)
 	}
 	if payload.Role != "mitra" {
-		Response.Message = "Kamuh bukan Mitra"
-		GCFReturnStruct(Response)
+		return GCFHandlerGetMagangFromID(MONGOCONNSTRINGENV, dbname, r)
 	}
 	id := GetID(r)
 	if id == "" {
-		GCFHandlerGetMagangFromMitra(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname, r)
+		return GCFHandlerGetMagangFromMitra(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname, r)
 	}
 	idparam, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		Response.Message = "Invalid id parameter"
-		GCFReturnStruct(Response)
+		return GCFReturnStruct(Response)
 	}
 	data, err := GetMagangFromIDByMitra(idparam, payload.Id, conn)
 	if err != nil {
 		Response.Message = err.Error()
-		GCFReturnStruct(Response)
+		return GCFReturnStruct(Response)
 	}
 	return GCFReturnStruct(data)
 }
