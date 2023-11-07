@@ -167,6 +167,30 @@ func TestGeneratePrivateKeyPaseto(t *testing.T) {
 	fmt.Println("ini hasil :", hasil, err)
 }
 
+func TestUpdateMahasiswa(t *testing.T) {
+	var doc model.Mahasiswa
+	id := "654a01bde89e6f232a62e41d"
+	objectId, _ := primitive.ObjectIDFromHex(id)
+	id2 := "654a01bce89e6f232a62e41b"
+	userid, _ := primitive.ObjectIDFromHex(id2)
+	doc.NamaLengkap = "Adito Nausha Adam"
+	doc.TanggalLahir = "20/05/2001"
+	doc.JenisKelamin = "Laki-laki"
+	doc.NIM = "1214031"
+	doc.PerguruanTinggi = "Universitas Logistik dan Bisnis Internasional"
+	if doc.NamaLengkap == "" || doc.TanggalLahir == "" || doc.JenisKelamin == "" || doc.NIM == "" || doc.PerguruanTinggi == "" {
+		t.Errorf("mohon untuk melengkapi data")
+	} else {
+		err := module.UpdateMahasiswa(objectId, userid, db, doc)
+		if err != nil {
+			t.Errorf("Error inserting document: %v", err)
+			fmt.Println("Data tidak berhasil diupdate")
+		} else {
+			fmt.Println("Data berhasil diupdate")
+		}
+	}
+}
+
 // func TestWatoken2(t *testing.T) {
 // 	var user model.User
 // 	privateKey, publicKey := module.GenerateKey()
