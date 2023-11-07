@@ -86,6 +86,58 @@ func GCFHandlerGetAll(MONGOCONNSTRINGENV, dbname, col string, docs interface{}) 
 }
 
 // user
+func GCFHandlerUpdateEmailUser(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)	
+	var Response model.Response
+	Response.Status = false
+	var datauser model.User
+	err := json.NewDecoder(r.Body).Decode(&datauser)
+	if err != nil {
+		Response.Message = "error parsing application/json: " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	tokenstring := r.Header.Get("Authorization")
+	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
+	if err != nil {
+		Response.Message = "Gagal Decode Token : " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	err = UpdateEmailUser(payload.Id, conn, datauser)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	Response.Status = true
+	Response.Message = "Berhasil Update Email"
+	return GCFReturnStruct(Response)
+}
+
+func GCFHandlerUpdatePasswordUser(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)	
+	var Response model.Response
+	Response.Status = false
+	var datapassword model.Password
+	err := json.NewDecoder(r.Body).Decode(&datapassword)
+	if err != nil {
+		Response.Message = "error parsing application/json: " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	tokenstring := r.Header.Get("Authorization")
+	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
+	if err != nil {
+		Response.Message = "Gagal Decode Token : " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	err = UpdatePasswordUser(payload.Id, conn, datapassword)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	Response.Status = true
+	Response.Message = "Berhasil Update Password"
+	return GCFReturnStruct(Response)
+}
+
 func GCFHandlerUpdateUser(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	var Response model.Response
