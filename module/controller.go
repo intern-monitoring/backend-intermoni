@@ -670,3 +670,22 @@ func GetMagangFromIDByMitra(idparam, iduser primitive.ObjectID, db *mongo.Databa
 	}
 	return magang, nil
 }
+
+// mahasiswa magang
+func InsertMahasiswaMagang(idmagang, idmahasiswa primitive.ObjectID, db *mongo.Database) error {
+	mahasiswa_magang := bson.M{
+		"mahasiswa" : model.Mahasiswa {
+			ID: idmahasiswa,
+		},
+		"magang" : model.Magang {
+			ID: idmagang,
+		},
+		"seleksikampus" : false,
+		"seleksimitra" : false,
+	}
+	_, err := InsertOneDoc(db, "mahasiswa_magang", mahasiswa_magang)
+	if err != nil {
+		return err
+	}
+	return nil
+}
