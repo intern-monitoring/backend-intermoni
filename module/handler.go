@@ -593,6 +593,41 @@ func GCFHandlerGetMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, 
 	return GCFReturnStruct(data)
 }
 
+// mahasiswa magang
+func GCFHandlerInsertMahasiswaMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)	
+	var Response model.Response
+	Response.Status = false
+	tokenstring := r.Header.Get("Authorization")
+	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
+	if err != nil {
+		Response.Message = "Gagal Decode Token : " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	if payload.Role != "mahasiswa" {
+		Response.Message = "Maneh tidak memiliki akses"
+		return GCFReturnStruct(Response)
+	}
+	id := GetID(r)
+	if id == "" {
+		Response.Message = "Wrong parameter"
+		return GCFReturnStruct(Response)
+	}
+	idmagang, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		Response.Message = "Invalid id parameter"
+		return GCFReturnStruct(Response)
+	}
+	err = InsertMahasiswaMagang(idmagang, payload.Id, conn)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	Response.Status = true
+	Response.Message = "Berhasil Apply Magang"
+	return GCFReturnStruct(Response)
+}
+
 // return struct
 func GCFReturnStruct(DataStuct any) string {
 	jsondata, _ := json.Marshal(DataStuct)
