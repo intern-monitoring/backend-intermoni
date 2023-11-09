@@ -56,6 +56,14 @@ type Magang struct {
 	Expired   				string			   `bson:"expired,omitempty" json:"expired,omitempty"`
 }
 
+type MahasiswaMagang struct {
+	ID              		primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	Mahasiswa         		Mahasiswa		   `bson:"mahasiswa,omitempty" json:"mahasiswa,omitempty"`
+	Magang		      		Magang			   `bson:"magang,omitempty" json:"magang,omitempty"`
+	SeleksiKampus			bool			   `bson:"seleksikampus,omitempty" json:"seleksikampus,omitempty"`
+	SeleksiMitra			bool			   `bson:"seleksimitra,omitempty" json:"seleksimitra,omitempty"`
+}
+
 type Credential struct {
 	Status  bool   `json:"status" bson:"status"`
 	Token   string `json:"token,omitempty" bson:"token,omitempty"`
