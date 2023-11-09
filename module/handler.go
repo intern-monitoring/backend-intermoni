@@ -618,7 +618,12 @@ func GCFHandlerInsertMahasiswaMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbn
 		Response.Message = "Invalid id parameter"
 		return GCFReturnStruct(Response)
 	}
-	err = InsertMahasiswaMagang(idmagang, payload.Id, conn)
+	mahasiswa, err := GetMahasiswaFromAkun(payload.Id, conn)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	err = InsertMahasiswaMagang(idmagang, mahasiswa.ID, conn)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
