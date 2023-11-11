@@ -643,13 +643,28 @@ func GCFHandlerGetMahasiswaMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname
 		Response.Message = "Gagal Decode Token : " + err.Error()
 		return GCFReturnStruct(Response)
 	}
-	if payload.Role != "admin" || payload.Role != "mitra" {
+	if payload.Role != "admin" && payload.Role != "mitra" {
 		Response.Message = "Maneh tidak memiliki akses"
 		return GCFReturnStruct(Response)
 	}
 	if payload.Role == "admin" {
-		return GetMahasiswaMagangByAdmin()
+		data, err := GetMahasiswaMagangByAdmin(conn)
+		if err != nil {
+			Response.Message = err.Error()
+			return GCFReturnStruct(Response)
+		}
+		return GCFReturnStruct(data)
 	}
+	if payload.Role == "mitra" {
+		data, err := GetMahasiswaMagangByMitra(payload.Id, conn)
+		if err != nil {
+			Response.Message = err.Error()
+			return GCFReturnStruct(Response)
+		}
+		return GCFReturnStruct(data)
+	}
+	Response.Message = "Tidak ada data"
+	return GCFReturnStruct(Response)
 }
 
 // return struct
