@@ -633,21 +633,24 @@ func GCFHandlerInsertMahasiswaMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbn
 	return GCFReturnStruct(Response)
 }
 
-// func GCFHandlerGetMahasiswaMagangByAdmin(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
-// 	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)	
-// 	var Response model.Response
-// 	Response.Status = false
-// 	tokenstring := r.Header.Get("Authorization")
-// 	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
-// 	if err != nil {
-// 		Response.Message = "Gagal Decode Token : " + err.Error()
-// 		return GCFReturnStruct(Response)
-// 	}
-// 	if payload.Role != "admin" {
-// 		Response.Message = "Maneh tidak memiliki akses"
-// 		return GCFReturnStruct(Response)
-// 	}
-// }
+func GCFHandlerGetMahasiswaMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+	conn := MongoConnect(MONGOCONNSTRINGENV, dbname)	
+	var Response model.Response
+	Response.Status = false
+	tokenstring := r.Header.Get("Authorization")
+	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
+	if err != nil {
+		Response.Message = "Gagal Decode Token : " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	if payload.Role != "admin" || payload.Role != "mitra" {
+		Response.Message = "Maneh tidak memiliki akses"
+		return GCFReturnStruct(Response)
+	}
+	if payload.Role == "admin" {
+		return GetMahasiswaMagangByAdmin()
+	}
+}
 
 // return struct
 func GCFReturnStruct(DataStuct any) string {
