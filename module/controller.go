@@ -689,3 +689,35 @@ func InsertMahasiswaMagang(idmagang, idmahasiswa primitive.ObjectID, db *mongo.D
 	}
 	return nil
 }
+
+func GetMahasiswaMagangByAdmin(db *mongo.Database) (mahasiswa_magang []model.MahasiswaMagang, err error) {
+	collection := db.Collection("mahasiswa_magang")
+	filter := bson.M{}
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin mongo: %s", err)
+	}
+	err = cursor.All(context.Background(), &mahasiswa_magang)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin context: %s", err)
+	}
+	return mahasiswa_magang, nil
+}
+
+func GetMahasiswaMagangByMitra(_id primitive.ObjectID, db *mongo.Database) (mahasiswa_magang []model.MahasiswaMagang, err error) {
+	collection := db.Collection("mahasiswa_magang")
+	mitra, err := GetMitraFromAkun(_id, db)
+	if err != nil {
+		return mahasiswa_magang, err
+	}
+	filter := bson.M{"magang.mitra._id": mitra.ID}
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByMitra mongo: %s", err)
+	}
+	err = cursor.All(context.Background(), &mahasiswa_magang)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByMitra context: %s", err)
+	}
+	return mahasiswa_magang, nil
+}
