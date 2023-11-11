@@ -1,12 +1,16 @@
 package Fatwa_1214038
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"testing"
 
 	"github.com/intern-monitoring/backend-intermoni/model"
 	"github.com/intern-monitoring/backend-intermoni/module"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/argon2"
 	// "go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -86,6 +90,62 @@ func TestGetAllDoc(t *testing.T) {
 // 	}
 // 	fmt.Println(doc)
 // }
+
+func TestInsertUser(t *testing.T) {
+	var doc model.User
+	doc.Email = "admin@gmail.com"
+	password := "admin123"
+	salt := make([]byte, 16)
+	_, err := rand.Read(salt)
+	if err != nil {
+		t.Errorf("kesalahan server : salt")
+	} else {
+		hashedPassword := argon2.IDKey([]byte(password), salt, 1, 64*1024, 4, 32)
+		user := bson.M{
+			"email": doc.Email,
+			"password": hex.EncodeToString(hashedPassword),
+			"salt": hex.EncodeToString(salt),
+			"role": "admin",
+		}
+		_, err = module.InsertOneDoc(db, "user", user)
+		if err != nil {
+			t.Errorf("gagal insert")
+		} else {
+			fmt.Println("berhasil insert")
+		}
+	}
+}
+
+func TestGetUserByAdmin(t *testing.T) {
+	id := "65473763d04dda3a8502b58f"
+	idparam, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		t.Errorf("Error converting id to objectID: %v", err)
+	}
+	data, err := module.GetUserFromID(idparam, db)
+	if err != nil {
+		t.Errorf("Error getting document: %v", err)
+	} else {
+		if data.Role == "mahasiswa" {
+			datamahasiswa, err := module.GetMahasiswaFromAkun(data.ID, db)
+			if err != nil {
+				t.Errorf("Error getting document: %v", err)
+			} else {
+				datamahasiswa.Akun = data
+				fmt.Println(datamahasiswa) 
+			}
+		}
+		if data.Role == "mitra" {
+			datamitra, err := module.GetMitraFromAkun(data.ID, db)
+			if err != nil {
+				t.Errorf("Error getting document: %v", err)
+			} else {
+				datamitra.Akun = data
+				fmt.Println(datamitra)
+			}
+		}
+	}
+}
 
 func TestSignUpMahasiswa(t *testing.T) {
 	var doc model.Mahasiswa
