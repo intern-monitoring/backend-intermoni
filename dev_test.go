@@ -453,3 +453,52 @@ func TestGetMagangFromIDByMitra(t *testing.T) {
 		fmt.Println(magang)
 	}
 }
+
+func TestInsertMahasiswaMagang(t *testing.T) {
+	idmg := "654a64e04c78636f1e657479"
+	idmhs := "65473763d04dda3a8502b58f"
+	idmgid, _ := primitive.ObjectIDFromHex(idmg)
+	idmhsid, _ := primitive.ObjectIDFromHex(idmhs)
+	err := module.InsertMahasiswaMagang(idmgid, idmhsid, db)
+	if err != nil {
+		t.Errorf("Error insert : %v", err)
+	} else {
+		fmt.Println("Berhasil yey!")
+	}
+}
+
+func TestSeleksiMahasiswaMagangByAdmin(t *testing.T) {
+	idmg := "6550cd47b25dc17957071a4a"
+	idmgid, _ := primitive.ObjectIDFromHex(idmg)
+	err := module.SeleksiMahasiswaMagangByAdmin(idmgid, db)
+	if err != nil {
+		t.Errorf("Error get mahasiswa : %v", err)
+	} else {
+		fmt.Println("Berhasil yey!")
+	}
+}
+
+func TestGetMahasiswaMagangByAdmin(t *testing.T) {
+	conn := module.MongoConnect("MONGOSTRING", "db_intermoni")
+	mahasiswa, err := module.GetMahasiswaMagangByAdmin(conn)
+	if err != nil {
+		t.Errorf("Error get mahasiswa : %v", err)
+	} else {
+		fmt.Println(mahasiswa)
+	}
+}
+
+func TestReturnStruct(t *testing.T){
+	// var user model.User
+	// user.Email = "fatwa"
+	id := "65473763d04dda3a8502b58f"
+	objectId, _ := primitive.ObjectIDFromHex(id)
+	user, _ := module.GetUserFromID(objectId, db)
+	data := model.User{ 
+		ID : user.ID,
+		Email: user.Email,
+		Role : user.Role,
+	}
+	hasil := module.GCFReturnStruct(data)
+	fmt.Println(hasil)
+}

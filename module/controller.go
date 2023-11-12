@@ -645,7 +645,7 @@ func GetMagangFromID(_id primitive.ObjectID, db *mongo.Database) (magang model.M
 	}
 	mitra, err := GetMitraFromID(magang.Mitra.ID, db)
 	if err != nil {
-		return magang, fmt.Errorf("error GetAllMagang get mitra: %s", err)
+		return magang, fmt.Errorf("error GetMagang get mitra: %s", err)
 	}
 	magang.Mitra = mitra
 	return magang, nil
@@ -672,22 +672,94 @@ func GetMagangFromIDByMitra(idparam, iduser primitive.ObjectID, db *mongo.Databa
 }
 
 // mahasiswa magang
-func InsertMahasiswaMagang(idmagang, idmahasiswa primitive.ObjectID, db *mongo.Database) error {
+func InsertMahasiswaMagang(idmagang, iduser primitive.ObjectID, db *mongo.Database) error {
+	mahasiswa, err := GetMahasiswaFromAkun(iduser, db)
+	if err != nil{
+		return err
+	}
+	magang, err := GetMagangFromID(idmagang, db)
+	if err != nil{
+		return err
+	}
+	if CheckMahasiswaMagang(mahasiswa.ID, magang.ID, db) {
+		return fmt.Errorf("kamu sudah apply magang ini")
+	}
 	mahasiswa_magang := bson.M{
 		"mahasiswa" : model.Mahasiswa {
-			ID: idmahasiswa,
+			ID: mahasiswa.ID,
+			Akun: model.User{
+				ID: mahasiswa.Akun.ID,
+			},
 		},
 		"magang" : model.Magang {
-			ID: idmagang,
+			ID: magang.ID,
+			Mitra: model.Mitra{
+				ID: magang.Mitra.ID,
+				Akun: model.User{
+					ID: magang.Mitra.Akun.ID,
+				},
+			},
 		},
 		"seleksikampus" : false,
 		"seleksimitra" : false,
 	}
-	_, err := InsertOneDoc(db, "mahasiswa_magang", mahasiswa_magang)
+	_, err = InsertOneDoc(db, "mahasiswa_magang", mahasiswa_magang)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func DeleteMahasiswaMagang(idmahasiswamagang, iduser primitive.ObjectID, db *mongo.Database) error {
+	mahasiswa_magang, err := GetMahasiswaMagangFromID(idmahasiswamagang, db)
+	if err != nil {
+		return err
+	}
+	if mahasiswa_magang.Mahasiswa.Akun.ID != iduser {
+		return fmt.Errorf("kamu bukan pemilik data ini")
+	}
+	err = DeleteOneDoc(idmahasiswamagang, db, "mahasiswa_magang")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func SeleksiMahasiswaMagangByAdmin(_id primitive.ObjectID, db *mongo.Database) error {
+	mahasiswa_magang, err := GetMahasiswaMagangFromID(_id, db)
+	if err != nil {
+		return err
+	}
+	mahasiswa_magang.SeleksiKampus = true
+	err = UpdateOneDoc(_id, db, "mahasiswa_magang", mahasiswa_magang)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func SeleksiMahasiswaMagangByMitra(idmahasiswamagang, iduser primitive.ObjectID, db *mongo.Database) error {
+	mahasiswa_magang, err := GetMahasiswaMagangFromID(idmahasiswamagang, db)
+	if err != nil {
+		return err
+	}
+	_, err = GetMagangFromIDByMitra(mahasiswa_magang.Magang.ID, iduser, db)
+	if err != nil {
+		return err
+	}
+	mahasiswa_magang.SeleksiMitra = true
+	err = UpdateOneDoc(idmahasiswamagang, db, "mahasiswa_magang", mahasiswa_magang)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func CheckMahasiswaMagang(idmahasiswa, idmagang primitive.ObjectID, db *mongo.Database) bool {
+	collection := db.Collection("mahasiswa_magang")
+	filter := bson.M{"mahasiswa._id": idmahasiswa, "magang._id": idmagang}
+	err := collection.FindOne(context.Background(), filter).Decode(&model.MahasiswaMagang{})
+	return err == nil 
 }
 
 func GetMahasiswaMagangByAdmin(db *mongo.Database) (mahasiswa_magang []model.MahasiswaMagang, err error) {
@@ -701,6 +773,25 @@ func GetMahasiswaMagangByAdmin(db *mongo.Database) (mahasiswa_magang []model.Mah
 	if err != nil {
 		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin context: %s", err)
 	}
+	for _, m := range mahasiswa_magang {
+		mahasiswa, err := GetMahasiswaFromID(m.Mahasiswa.ID, db)
+		if err != nil {
+			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get mahasiswa: %s", err)
+		}
+		m.Mahasiswa = mahasiswa
+		magang, err := GetMagangFromID(m.Magang.ID, db)
+		if err != nil {
+			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get magang: %s", err)
+		}
+		mitra, err := GetMitraFromID(magang.Mitra.ID, db)
+		if err != nil {
+			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get mitra: %s", err)
+		}
+		magang.Mitra = mitra
+		m.Magang = magang
+		mahasiswa_magang = append(mahasiswa_magang, m)
+		mahasiswa_magang = mahasiswa_magang[1:]
+	}
 	return mahasiswa_magang, nil
 }
 
@@ -710,7 +801,7 @@ func GetMahasiswaMagangByMitra(_id primitive.ObjectID, db *mongo.Database) (maha
 	if err != nil {
 		return mahasiswa_magang, err
 	}
-	filter := bson.M{"magang.mitra._id": mitra.ID}
+	filter := bson.M{"magang.mitra._id": mitra.ID, "seleksikampus": true}
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
 		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByMitra mongo: %s", err)
@@ -718,6 +809,93 @@ func GetMahasiswaMagangByMitra(_id primitive.ObjectID, db *mongo.Database) (maha
 	err = cursor.All(context.Background(), &mahasiswa_magang)
 	if err != nil {
 		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByMitra context: %s", err)
+	}
+	for _, m := range mahasiswa_magang {
+		mahasiswa, err := GetMahasiswaFromID(m.Mahasiswa.ID, db)
+		if err != nil {
+			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get mahasiswa: %s", err)
+		}
+		m.Mahasiswa = mahasiswa
+		magang, err := GetMagangFromID(m.Magang.ID, db)
+		if err != nil {
+			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get magang: %s", err)
+		}
+		m.Magang = magang
+		mahasiswa_magang = append(mahasiswa_magang, m)
+		mahasiswa_magang = mahasiswa_magang[1:]
+	}
+	return mahasiswa_magang, nil
+}
+
+func GetMahasiswaMagangByMahasiswa(_id primitive.ObjectID, db *mongo.Database) (mahasiswa_magang []model.MahasiswaMagang, err error) {
+	collection := db.Collection("mahasiswa_magang")
+	mahasiswa, err := GetMahasiswaFromAkun(_id, db)
+	if err != nil {
+		return mahasiswa_magang, err
+	}
+	filter := bson.M{"mahasiswa._id": mahasiswa.ID}
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByMahasiswa mongo: %s", err)
+	}
+	err = cursor.All(context.Background(), &mahasiswa_magang)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByMahasiswa context: %s", err)
+	}
+	for _, m := range mahasiswa_magang {
+		magang, err := GetMagangFromID(m.Magang.ID, db)
+		if err != nil {
+			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get magang: %s", err)
+		}
+		mitra, err := GetMitraFromID(magang.Mitra.ID, db)
+		if err != nil {
+			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get mitra: %s", err)
+		}
+		magang.Mitra = mitra
+		m.Magang = magang
+		mahasiswa_magang = append(mahasiswa_magang, m)
+		mahasiswa_magang = mahasiswa_magang[1:]
+	}
+	return mahasiswa_magang, nil
+}
+
+func GetDetailMahasiswaMagangFromID(_id primitive.ObjectID, db *mongo.Database) (mahasiswa_magang model.MahasiswaMagang, err error) {
+	collection := db.Collection("mahasiswa_magang")
+	filter := bson.M{"_id": _id}
+	err = collection.FindOne(context.TODO(), filter).Decode(&mahasiswa_magang)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return mahasiswa_magang, fmt.Errorf("no data found for ID %s", _id)
+		}
+		return mahasiswa_magang, fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
+	}
+	mahasiswa, err := GetMahasiswaFromID(mahasiswa_magang.Mahasiswa.ID, db)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID get mahasiswa: %s", err)
+	}
+	mahasiswa_magang.Mahasiswa = mahasiswa
+	magang, err := GetMagangFromID(mahasiswa_magang.Magang.ID, db)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID get magang: %s", err)
+	}
+	mitra, err := GetMitraFromID(magang.Mitra.ID, db)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID get mitra: %s", err)
+	}
+	magang.Mitra = mitra
+	mahasiswa_magang.Magang = magang
+	return mahasiswa_magang, nil
+}
+
+func GetMahasiswaMagangFromID(_id primitive.ObjectID, db *mongo.Database) (mahasiswa_magang model.MahasiswaMagang, err error) {
+	collection := db.Collection("mahasiswa_magang")
+	filter := bson.M{"_id": _id}
+	err = collection.FindOne(context.TODO(), filter).Decode(&mahasiswa_magang)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return mahasiswa_magang, fmt.Errorf("no data found for ID %s", _id)
+		}
+		return mahasiswa_magang, fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
 	}
 	return mahasiswa_magang, nil
 }
