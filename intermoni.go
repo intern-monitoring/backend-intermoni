@@ -226,7 +226,7 @@ func GetDetailMahasiswaMagangFromID(_id primitive.ObjectID, db *mongo.Database) 
 		}
 		return mahasiswa_magang, fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
 	}
-	mahasiswa, err := GetMahasiswaFromID(mahasiswa_magang.Mahasiswa.ID, db)
+	mahasiswa, err := GetMahasiswaFromAkun(mahasiswa_magang.Mahasiswa.Akun.ID, db)
 	if err != nil {
 		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID get mahasiswa: %s", err)
 	}
@@ -235,7 +235,7 @@ func GetDetailMahasiswaMagangFromID(_id primitive.ObjectID, db *mongo.Database) 
 	if err != nil {
 		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID get magang: %s", err)
 	}
-	mitra, err := GetMitraFromID(magang.Mitra.ID, db)
+	mitra, err := GetMitraFromAkun(magang.Mitra.Akun.ID, db)
 	if err != nil {
 		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID get mitra: %s", err)
 	}
@@ -256,7 +256,6 @@ func GetMahasiswaMagangFromID(_id primitive.ObjectID, db *mongo.Database) (mahas
 	}
 	return mahasiswa_magang, nil
 }
-
 
 // get user login
 func GetUserLogin(PASETOPUBLICKEYENV string, r *http.Request) (Payload, error) {
