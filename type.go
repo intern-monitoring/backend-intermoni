@@ -29,7 +29,7 @@ type Mahasiswa struct {
 	NIM  			string             `bson:"nim,omitempty" json:"nim,omitempty"`
 	PerguruanTinggi string             `bson:"perguruantinggi,omitempty" json:"perguruantinggi,omitempty"`
 	Prodi  			string             `bson:"prodi,omitempty" json:"prodi,omitempty"`
-	SeleksiKampus 	byte               `bson:"seleksiKampus,omitempty" json:"seleksiKampus,omitempty"`
+	SeleksiKampus 	int               `bson:"seleksiKampus,omitempty" json:"seleksiKampus,omitempty"`
 	Akun     		User			   `bson:"akun,omitempty" json:"akun,omitempty"`
 }
 
@@ -43,6 +43,7 @@ type Mitra struct {
 	Tentang		 	string             `bson:"tentang,omitempty" json:"tentang,omitempty"`
 	Alamat 			string             `bson:"alamat,omitempty" json:"alamat,omitempty"`
 	Website 		string             `bson:"website,omitempty" json:"website,omitempty"`
+	MoU 			int                `bson:"mou,omitempty" json:"mou,omitempty"`
 	Akun     		User			   `bson:"akun,omitempty" json:"akun,omitempty"`
 }
 
@@ -61,8 +62,8 @@ type MahasiswaMagang struct {
 	ID              		primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	Mahasiswa         		Mahasiswa		   `bson:"mahasiswa,omitempty" json:"mahasiswa,omitempty"`
 	Magang		      		Magang			   `bson:"magang,omitempty" json:"magang,omitempty"`
-	SeleksiBerkas			byte			   `bson:"seleksiberkas,omitempty" json:"seleksiberkas,omitempty"`
-	SeleksiWewancara		byte			   `bson:"seleksiwewancara,omitempty" json:"seleksiwewancara,omitempty"`
+	SeleksiBerkas			int			   	   `bson:"seleksiberkas,omitempty" json:"seleksiberkas,omitempty"`
+	SeleksiWewancara		int			   	   `bson:"seleksiwewancara,omitempty" json:"seleksiwewancara,omitempty"`
 }
 
 type Credential struct {
