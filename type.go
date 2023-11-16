@@ -64,6 +64,7 @@ type MahasiswaMagang struct {
 	Magang		      		Magang			   `bson:"magang,omitempty" json:"magang,omitempty"`
 	SeleksiBerkas			int			   	   `bson:"seleksiberkas,omitempty" json:"seleksiberkas,omitempty"`
 	SeleksiWewancara		int			   	   `bson:"seleksiwewancara,omitempty" json:"seleksiwewancara,omitempty"`
+	Status					int			   	   `bson:"status,omitempty" json:"status,omitempty"`
 }
 
 type Credential struct {
