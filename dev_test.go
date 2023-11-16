@@ -14,7 +14,7 @@ var db = intermoni.MongoConnect("MONGOSTRING", "db_intermoni")
 func TestCheckMahasiswaMagang(t *testing.T) {
 	id := "654908fbe2a5ace42ef0fab8"
 	objectId, _ := primitive.ObjectIDFromHex(id)
-	hasil := mahasiswa.CheckMahasiswaMagang(objectId, db)
+	hasil := mahasiswa.CheckMahasiswa_MahasiswaMagang(objectId, db)
 	fmt.Println(hasil)
 }
 

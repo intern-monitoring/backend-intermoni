@@ -29,7 +29,7 @@ type Mahasiswa struct {
 	NIM  			string             `bson:"nim,omitempty" json:"nim,omitempty"`
 	PerguruanTinggi string             `bson:"perguruantinggi,omitempty" json:"perguruantinggi,omitempty"`
 	Prodi  			string             `bson:"prodi,omitempty" json:"prodi,omitempty"`
-	SeleksiKampus 	int               `bson:"seleksiKampus,omitempty" json:"seleksiKampus,omitempty"`
+	SeleksiKampus 	int                `bson:"seleksiKampus,omitempty" json:"seleksiKampus,omitempty"`
 	Akun     		User			   `bson:"akun,omitempty" json:"akun,omitempty"`
 }
 
