@@ -43,5 +43,19 @@ func GetAllMitraByAdmin(db *mongo.Database) (mitra []intermoni.Mitra, err error)
 	if err != nil {
 		return mitra, err
 	}
+	for _, m := range mitra {
+		user, err := intermoni.GetUserFromID(m.Akun.ID, db)
+		if err != nil {
+			return mitra, err
+		}
+		akun := intermoni.User{
+			ID:    user.ID,
+			Email: user.Email,
+			Role:  user.Role,
+		}
+		m.Akun = akun
+		mitra = append(mitra, m)
+		mitra = mitra[1:]
+	}
 	return mitra, nil
 }
