@@ -9,6 +9,7 @@ import (
 	intermoni "github.com/intern-monitoring/backend-intermoni"
 	"github.com/intern-monitoring/backend-intermoni/magang"
 	"github.com/intern-monitoring/backend-intermoni/mahasiswa"
+	"github.com/intern-monitoring/backend-intermoni/mahasiswa_magang"
 	"github.com/intern-monitoring/backend-intermoni/signup_mahasiswa"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -88,6 +89,17 @@ func TestGetMitraByMoU(t *testing.T) {
 	hasil, err := magang.GetMitraByMoU(db)
 	if err != nil {
 		t.Errorf("Error TestGetMitraByMoU: %v", err)
+	} else {
+		fmt.Println(hasil)
+	}
+}
+
+func TestGetMahasiswaMagangByMitra(t *testing.T) {
+	id := "65561a80c2afea0e413128e9"
+	objectId, _ := primitive.ObjectIDFromHex(id)
+	hasil, err := mahasiswa_magang.GetMahasiswaMagangByMitra(objectId, db)
+	if err != nil {
+		t.Errorf("Error TestGetMahasiswaMagangByMitra: %v", err)
 	} else {
 		fmt.Println(hasil)
 	}

@@ -66,7 +66,7 @@ func GetMahasiswaMagangByMitra(_id primitive.ObjectID, db *mongo.Database) (maha
 			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get mahasiswa: %s", err)
 		}
 		m.Mahasiswa = mahasiswa
-		magang, err := intermoni.GetMagangFromIDByMitra(m.Magang.ID, m.Magang.Mitra.ID,  db)
+		magang, err := intermoni.GetMagangFromIDByMitra(m.Magang.ID, m.Magang.Mitra.Akun.ID,  db)
 		if err != nil {
 			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get magang: %s", err)
 		}
