@@ -1,12 +1,18 @@
 package intermoni_test
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"testing"
 
 	intermoni "github.com/intern-monitoring/backend-intermoni"
+	"github.com/intern-monitoring/backend-intermoni/magang"
 	"github.com/intern-monitoring/backend-intermoni/mahasiswa"
+	"github.com/intern-monitoring/backend-intermoni/signup_mahasiswa"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/argon2"
 )
 
 var db = intermoni.MongoConnect("MONGOSTRING", "db_intermoni")
@@ -18,15 +24,74 @@ func TestCheckMahasiswaMagang(t *testing.T) {
 	fmt.Println(hasil)
 }
 
-// func TestGetUserFromEmail(t *testing.T) {
-// 	email := "admin@gmail.com"
-// 	hasil, err := module.GetUserFromEmail(email, db)
-// 	if err != nil {
-// 		t.Errorf("Error TestGetUserFromEmail: %v", err)
-// 	} else {
-// 		fmt.Println(hasil)
-// 	}
-// }
+func TestGetUserFromEmail(t *testing.T) {
+	email := "admin@gmail.com"
+	hasil, err := intermoni.GetUserFromEmail(email, db)
+	if err != nil {
+		t.Errorf("Error TestGetUserFromEmail: %v", err)
+	} else {
+		fmt.Println(hasil)
+	}
+}
+
+func TestGetAllMahasiswaByAdmin(t *testing.T) {
+	hasil, err := mahasiswa.GetAllMahasiswaByAdmin(db)
+	if err != nil {
+		t.Errorf("Error TestGetAllMahasiswaByAdmin: %v", err)
+	} else {
+		fmt.Println(hasil)
+	}
+}
+
+func TestSeleksiMahasiswaByAdmin(t *testing.T) {
+	var mhs intermoni.Mahasiswa
+	mhs.SeleksiKampus = 1
+	id := "65561b69d37492d5500811e0"
+	objectId, _ := primitive.ObjectIDFromHex(id)
+	err := mahasiswa.SeleksiMahasiswaByAdmin(objectId, db, mhs)
+	if err != nil {
+		t.Errorf("Error TestSeleksiMahasiswaMagangByAdmin: %v", err)
+	} else {
+		fmt.Println("Berhasil yey!")
+	}
+}
+
+func TestSignUpMahasiswa(t *testing.T) {
+	var doc intermoni.Mahasiswa
+	doc.NamaLengkap = "Adit Nausha Adam"
+	doc.TanggalLahir = "2001-05-20"
+	doc.JenisKelamin = "Laki-laki"
+	doc.NIM = "1214031"
+	doc.PerguruanTinggi = "Universitas Logistik dan Bisnis Internasional"
+	doc.Prodi = "D4 Teknik Informatika"
+	doc.Akun.Email = "adit@gmail.com"
+	doc.Akun.Password = "fghjkliow"
+	doc.Akun.Confirmpassword = "fghjkliow"
+	err := signup_mahasiswa.SignUpMahasiswa(db, doc)
+	if err != nil {
+		t.Errorf("Error inserting document: %v", err)
+	} else {
+	fmt.Println("Data berhasil disimpan dengan nama :", doc.NamaLengkap)
+	}
+}
+
+func TestGetAllMagangByMahasiswa(t *testing.T) {
+	hasil, err := magang.GetAllMagangByMahasiswa(db)
+	if err != nil {
+		t.Errorf("Error TestGetAllMagangByMahasiswa: %v", err)
+	} else {
+		fmt.Println(hasil)
+	}
+}
+
+func TestGetMitraByMoU(t *testing.T) {
+	hasil, err := magang.GetMitraByMoU(db)
+	if err != nil {
+		t.Errorf("Error TestGetMitraByMoU: %v", err)
+	} else {
+		fmt.Println(hasil)
+	}
+}
 
 // func TestInsertOneMagang(t *testing.T) {
 // 	var doc model.Magang
@@ -93,30 +158,30 @@ func TestCheckMahasiswaMagang(t *testing.T) {
 // // 	fmt.Println(doc)
 // // }
 
-// func TestInsertUser(t *testing.T) {
-// 	var doc model.User
-// 	doc.Email = "admin@gmail.com"
-// 	password := "admin123"
-// 	salt := make([]byte, 16)
-// 	_, err := rand.Read(salt)
-// 	if err != nil {
-// 		t.Errorf("kesalahan server : salt")
-// 	} else {
-// 		hashedPassword := argon2.IDKey([]byte(password), salt, 1, 64*1024, 4, 32)
-// 		user := bson.M{
-// 			"email": doc.Email,
-// 			"password": hex.EncodeToString(hashedPassword),
-// 			"salt": hex.EncodeToString(salt),
-// 			"role": "admin",
-// 		}
-// 		_, err = module.InsertOneDoc(db, "user", user)
-// 		if err != nil {
-// 			t.Errorf("gagal insert")
-// 		} else {
-// 			fmt.Println("berhasil insert")
-// 		}
-// 	}
-// }
+func TestInsertUser(t *testing.T) {
+	var doc intermoni.User
+	doc.Email = "admin@gmail.com"
+	password := "admin123"
+	salt := make([]byte, 16)
+	_, err := rand.Read(salt)
+	if err != nil {
+		t.Errorf("kesalahan server : salt")
+	} else {
+		hashedPassword := argon2.IDKey([]byte(password), salt, 1, 64*1024, 4, 32)
+		user := bson.M{
+			"email": doc.Email,
+			"password": hex.EncodeToString(hashedPassword),
+			"salt": hex.EncodeToString(salt),
+			"role": "admin",
+		}
+		_, err = intermoni.InsertOneDoc(db, "user", user)
+		if err != nil {
+			t.Errorf("gagal insert")
+		} else {
+			fmt.Println("berhasil insert")
+		}
+	}
+}
 
 // func TestGetUserByAdmin(t *testing.T) {
 // 	id := "65473763d04dda3a8502b58f"
