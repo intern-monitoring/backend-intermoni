@@ -9,7 +9,7 @@ import (
 )
 
 // by mitra
-func SeleksiBerkasMahasiswaMagangByMitra(idmahasiswamagang, iduser primitive.ObjectID, db *mongo.Database, insertedDoc intermoni.MahasiswaMagang) error {
+func TambahMentorMahasiswaMagangByMitra(idmahasiswamagang, iduser primitive.ObjectID, db *mongo.Database, insertedDoc intermoni.MahasiswaMagang) error {
 	mahasiswa_magang, err := intermoni.GetMahasiswaMagangFromID(idmahasiswamagang, db)
 	if err != nil {
 		return err
@@ -18,17 +18,13 @@ func SeleksiBerkasMahasiswaMagangByMitra(idmahasiswamagang, iduser primitive.Obj
 	if err != nil {
 		return err
 	}
-	if mahasiswa_magang.SeleksiBerkas != 0 {
-		return fmt.Errorf("mahasiswa sudah diseleksi")
+	if mahasiswa_magang.Status != 1 {
+		return fmt.Errorf("mahasiswa belum aktif magang")
 	}
-	if insertedDoc.SeleksiBerkas != 1 && insertedDoc.SeleksiBerkas != 2 {
+	if insertedDoc.Mentor.ID == primitive.NilObjectID {
 		return fmt.Errorf("kesalahan server")
 	}
-	if insertedDoc.SeleksiBerkas == 2 {
-		mahasiswa_magang.SeleksiWewancara = 2
-		mahasiswa_magang.Status = 2
-	}
-	mahasiswa_magang.SeleksiBerkas = insertedDoc.SeleksiBerkas
+	mahasiswa_magang.Mentor.ID = insertedDoc.Mentor.ID
 	err = intermoni.UpdateOneDoc(idmahasiswamagang, db, "mahasiswa_magang", mahasiswa_magang)
 	if err != nil {
 		return err
@@ -36,28 +32,19 @@ func SeleksiBerkasMahasiswaMagangByMitra(idmahasiswamagang, iduser primitive.Obj
 	return nil
 }
 
-func SeleksiWawancaraMahasiswaMagangByMitra(idmahasiswamagang, iduser primitive.ObjectID, db *mongo.Database, insertedDoc intermoni.MahasiswaMagang) error {
+// by admin
+func TambahPembimbingMahasiswaMagangByAdmin(idmahasiswamagang primitive.ObjectID, db *mongo.Database, inserterdDoc intermoni.MahasiswaMagang) error {
 	mahasiswa_magang, err := intermoni.GetMahasiswaMagangFromID(idmahasiswamagang, db)
 	if err != nil {
 		return err
 	}
-	_, err = intermoni.GetMagangFromIDByMitra(mahasiswa_magang.Magang.ID, iduser, db)
-	if err != nil {
-		return err
+	if mahasiswa_magang.Status != 1 {
+		return fmt.Errorf("mahasiswa belum aktif magang")
 	}
-	if mahasiswa_magang.SeleksiWewancara != 0 {
-		return fmt.Errorf("mahasiswa sudah diseleksi")
-	}
-	if insertedDoc.SeleksiWewancara != 1 && insertedDoc.SeleksiWewancara != 2 {
+	if inserterdDoc.Pembimbing.ID == primitive.NilObjectID {
 		return fmt.Errorf("kesalahan server")
 	}
-	if mahasiswa_magang.SeleksiBerkas != 1 {
-		return fmt.Errorf("belum lolos seleksi berkas")
-	}
-	if insertedDoc.SeleksiWewancara == 2 {
-		mahasiswa_magang.Status = 2
-	}
-	mahasiswa_magang.SeleksiWewancara = insertedDoc.SeleksiWewancara
+	mahasiswa_magang.Pembimbing.ID = inserterdDoc.Pembimbing.ID
 	err = intermoni.UpdateOneDoc(idmahasiswamagang, db, "mahasiswa_magang", mahasiswa_magang)
 	if err != nil {
 		return err

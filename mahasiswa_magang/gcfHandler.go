@@ -14,7 +14,7 @@ var (
 	mahasiswa_magang intermoni.MahasiswaMagang
 )
 
-func GCFHandlerApplyMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+func Post(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := intermoni.MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Response.Status = false
 	//
@@ -48,7 +48,7 @@ func GCFHandlerApplyMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string
 	return intermoni.GCFReturnStruct(Response)
 }
 
-func GCFHandlerBatalApply(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+func Delete(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := intermoni.MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Response.Status = false
 	//
@@ -107,24 +107,24 @@ func Put(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 		Response.Message = "error parsing application/json: " + err.Error()
 		return intermoni.GCFReturnStruct(Response)
 	}
-	if user_login.Role == "mitra" {
-		if mahasiswa_magang.SeleksiBerkas != 0 {
-			err = SeleksiBerkasMahasiswaMagangByMitra(idmahasiswamagang, user_login.Id, conn, mahasiswa_magang)
-			if err != nil {
-				Response.Message = err.Error()
-				return intermoni.GCFReturnStruct(Response)
-			}
-			Response.Status = true
-			Response.Message = "Berhasil Seleksi"
-			return intermoni.GCFReturnStruct(Response)
-		}
-		err = SeleksiWawancaraMahasiswaMagangByMitra(idmahasiswamagang, user_login.Id, conn, mahasiswa_magang)
+	if user_login.Role == "admin" {
+		err = TambahPembimbingMahasiswaMagangByAdmin(idmahasiswamagang, conn, mahasiswa_magang)
 		if err != nil {
 			Response.Message = err.Error()
 			return intermoni.GCFReturnStruct(Response)
 		}
 		Response.Status = true
-		Response.Message = "Berhasil Seleksi"
+		Response.Message = "Berhasil Tambah Pembimbing"
+		return intermoni.GCFReturnStruct(Response)
+	}
+	if user_login.Role == "mitra" {
+		err = TambahMentorMahasiswaMagangByMitra(idmahasiswamagang, user_login.Id, conn, mahasiswa_magang)
+		if err != nil {
+			Response.Message = err.Error()
+			return intermoni.GCFReturnStruct(Response)
+		}
+		Response.Status = true
+		Response.Message = "Berhasil Tambah Mentor"
 		return intermoni.GCFReturnStruct(Response)
 	}
 	if user_login.Role == "mahasiswa" {
@@ -142,7 +142,7 @@ func Put(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 	return intermoni.GCFReturnStruct(Response)
 }
 
-func GCFHandlerGetMahasiswaMagang(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+func Get(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := intermoni.MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Response.Status = false
 	//
