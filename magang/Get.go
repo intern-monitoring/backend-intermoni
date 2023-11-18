@@ -10,21 +10,56 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+func GetMitraByMoU(db *mongo.Database) (mitra []intermoni.Mitra, err error) {
+	collection := db.Collection("mitra")
+	filter := bson.M{"mou": 1}
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return mitra, fmt.Errorf("error GetMitraByMoU mongo: %s", err)
+	}
+	err = cursor.All(context.Background(), &mitra)
+	if err != nil {
+		return mitra, fmt.Errorf("error GetMitraByMoU context: %s", err)
+	}
+	return mitra, nil
+}
+
+func GetAllMagangFromMitraBymahasiswa(_id primitive.ObjectID, db *mongo.Database) (magang []intermoni.Magang, err error) {
+	collection := db.Collection("magang")
+	filter := bson.M{"mitra._id": _id}
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		return magang, fmt.Errorf("error GetAllMagang mongo: %s", err)
+	}
+	err = cursor.All(context.TODO(), &magang)
+	if err != nil {
+		return magang, fmt.Errorf("error GetAllMagang context: %s", err)
+	}
+	for _, m := range magang {
+		mitra, err := intermoni.GetMitraFromID(m.Mitra.ID, db)
+		if err != nil {
+			fmt.Println(m.Mitra.ID)
+			return magang, fmt.Errorf("error GetAllMagang get mitra: %s", err)
+		}
+		m.Mitra = mitra
+		magang = append(magang, m)
+		magang = magang[1:]
+	}
+	return magang, nil
+}
+
 // by mahasiswa
 func GetAllMagangByMahasiswa(db *mongo.Database) (magang []intermoni.Magang, err error) {
-	collection := db.Collection("magang")
-	magang, err = GetAllMagang(db)
+	mitra, err := GetMitraByMoU(db)
 	if err != nil {
 		return magang, err
 	}
-	filter := bson.M{"mitra.mou": 1}
-	cursor, err := collection.Find(context.Background(), filter)
-	if err != nil {
-		return magang, fmt.Errorf("error GetAllMagangByMahasiswa mongo: %s", err)
-	}
-	err = cursor.All(context.Background(), &magang)
-	if err != nil {
-		return magang, fmt.Errorf("error GetAllMagangByMahasiswa context: %s", err)
+	for _, m := range mitra {
+		mgn, err := GetAllMagangFromMitraBymahasiswa(m.ID, db)
+		if err != nil {
+			return magang, err
+		}
+		magang = append(magang, mgn...)
 	}
 	return magang, nil
 }
