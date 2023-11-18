@@ -84,6 +84,15 @@ type Mentor struct {
 	Akun				User				`bson:"akun,omitempty" json:"akun,omitempty"`
 }
 
+type Report struct {
+	ID					primitive.ObjectID	`bson:"_id,omitempty" json:"_id,omitempty"`
+	MahasiswaMagang		MahasiswaMagang		`bson:"mahasiswamagang,omitempty" json:"mahasiswamagang,omitempty"`
+	Judul				string				`bson:"judul,omitempty" json:"judul,omitempty"`
+	Isi					string				`bson:"isi,omitempty" json:"isi,omitempty"`
+	Penerima			primitive.ObjectID	`bson:"penerima,omitempty" json:"penerima,omitempty"`
+	CreatedAt			primitive.DateTime	`bson:"createdat,omitempty" json:"createdat,omitempty"`
+}
+
 type Credential struct {
 	Status				bool				`json:"status" bson:"status"`
 	Token				string				`json:"token,omitempty" bson:"token,omitempty"`
