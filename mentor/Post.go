@@ -50,7 +50,7 @@ func AddMentorByMitra(iduser primitive.ObjectID, db *mongo.Database, insertedDoc
 		"email":    insertedDoc.Akun.Email,
 		"password": hex.EncodeToString(hashedPassword),
 		"salt":     hex.EncodeToString(salt),
-		"role":     "mahasiswa",
+		"role":     "mentor",
 	}
 	mentor := bson.M{
 		"namalengkap":     insertedDoc.NamaLengkap,

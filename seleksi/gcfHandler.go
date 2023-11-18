@@ -1,4 +1,4 @@
-package seleksi_berkas
+package seleksi
 
 import (
 	"encoding/json"
@@ -41,7 +41,7 @@ func Put(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 		Response.Message = "error parsing application/json: " + err.Error()
 		return intermoni.GCFReturnStruct(Response)
 	}
-	err = SeleksiWewancaraMahasiswaMagangByMitra(idmahasiswamagang, user_login.Id, conn, mahasiswa_magang)
+	err = SeleksiBerkasMahasiswaMagangByMitra(idmahasiswamagang, user_login.Id, conn, mahasiswa_magang)
 	if err != nil {
 		Response.Message = err.Error()
 		return intermoni.GCFReturnStruct(Response)

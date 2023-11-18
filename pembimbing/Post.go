@@ -46,7 +46,7 @@ func AddPembimbingByAdmin(db *mongo.Database, insertedDoc intermoni.Pembimbing) 
 		"email":    insertedDoc.Akun.Email,
 		"password": hex.EncodeToString(hashedPassword),
 		"salt":     hex.EncodeToString(salt),
-		"role":     "mahasiswa",
+		"role":     "pembimbing",
 	}
 	pembimbing := bson.M{
 		"namalengkap":     insertedDoc.NamaLengkap,
