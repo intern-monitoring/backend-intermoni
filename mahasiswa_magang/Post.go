@@ -27,20 +27,11 @@ func ApplyMagang(idmagang, iduser primitive.ObjectID, db *mongo.Database) error 
 		return fmt.Errorf("kamu sudah apply magang ini")
 	}
 	mahasiswa_magang := bson.M{
-		"mahasiswa": intermoni.Mahasiswa{
-			ID: mahasiswa.ID,
-			Akun: intermoni.User{
-				ID: mahasiswa.Akun.ID,
-			},
+		"mahasiswa": bson.M{
+			"_id": mahasiswa.ID,
 		},
-		"magang": intermoni.Magang{
-			ID: magang.ID,
-			Mitra: intermoni.Mitra{
-				ID: magang.Mitra.ID,
-				Akun: intermoni.User{
-					ID: magang.Mitra.Akun.ID,
-				},
-			},
+		"magang": bson.M{
+			"_id": magang.ID,
 		},
 		"seleksiberkas":    0,
 		"seleksiwewancara": 0,

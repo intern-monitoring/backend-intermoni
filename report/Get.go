@@ -11,7 +11,7 @@ import (
 )
 
 // by mahasiswa
-func GetAllReportByMahasiswa(_id primitive.ObjectID, db *mongo.Database) (report intermoni.Report, err error) {
+func GetAllReportByMahasiswa(_id primitive.ObjectID, db *mongo.Database) (report []intermoni.Report, err error) {
 	collection := db.Collection("report")
 	mahasiswa, err := intermoni.GetMahasiswaFromAkun(_id, db)
 	if err != nil {
@@ -32,7 +32,7 @@ func GetAllReportByMahasiswa(_id primitive.ObjectID, db *mongo.Database) (report
 // by mentor/pembimbing
 func GetAllReportByPenerima(_id primitive.ObjectID, db *mongo.Database) (report []intermoni.Report, err error) {
 	collection := db.Collection("report")
-	filter := bson.M{"penerima": _id}
+	filter := bson.M{"penerima._id": _id}
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
 		return report, fmt.Errorf("error GetAllReportByMitra mongo: %s", err)
@@ -40,6 +40,24 @@ func GetAllReportByPenerima(_id primitive.ObjectID, db *mongo.Database) (report 
 	err = cursor.All(context.Background(), &report)
 	if err != nil {
 		return report, fmt.Errorf("error GetAllReportByMitra context: %s", err)
+	}
+	for _, r := range report {
+		mahasiswa_magang, err := intermoni.GetMahasiswaMagangFromID(r.MahasiswaMagang.ID, db)
+		if err != nil {
+			return report, fmt.Errorf("error GetAllReportByMitra get mahasiswa magang: %s", err)
+		}
+		mahasiswa, err := intermoni.GetMahasiswaFromID(mahasiswa_magang.Mahasiswa.ID, db)
+		if err != nil {
+			return report, fmt.Errorf("error GetAllReportByMitra get mahasiswa: %s", err)
+		}
+		mahasiswa_magang.Mahasiswa = mahasiswa
+		magang, err := intermoni.GetMagangFromID(mahasiswa_magang.Magang.ID, db)
+		if err != nil {
+			return report, fmt.Errorf("error GetAllReportByMitra get magang: %s", err)
+		}
+		mahasiswa_magang.Magang = magang
+		report = append(report, r)
+		report = report[1:]
 	}
 	return report, nil
 }

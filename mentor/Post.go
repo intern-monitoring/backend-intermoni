@@ -55,8 +55,8 @@ func AddMentorByMitra(iduser primitive.ObjectID, db *mongo.Database, insertedDoc
 	mentor := bson.M{
 		"namalengkap":     insertedDoc.NamaLengkap,
 		"nik":             insertedDoc.NIK,
-		"mitra":           intermoni.Mitra{
-			ID: mitra.ID,
+		"mitra":           bson.M{
+			"_id": mitra.ID,
 		},
 		"akun": intermoni.User{
 			ID: objectId,

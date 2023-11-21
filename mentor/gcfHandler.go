@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	intermoni "github.com/intern-monitoring/backend-intermoni"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var (
@@ -38,5 +39,61 @@ func Post(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request
 	//
 	Response.Status = true
 	Response.Message = "Berhasil Apply Magang"
+	return intermoni.GCFReturnStruct(Response)
+}
+
+func Get(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+	conn := intermoni.MongoConnect(MONGOCONNSTRINGENV, dbname)
+	Response.Status = false
+	//
+	user_login, err := intermoni.GetUserLogin(PASETOPUBLICKEYENV, r)
+	if err != nil {
+		Response.Message = "Gagal Decode Token : " + err.Error()
+		return intermoni.GCFReturnStruct(Response)
+	}
+	id := intermoni.GetID(r)
+	if user_login.Role == "mitra" {
+		if id == "" {
+			mentor, err := GetAllMentorByMitra(user_login.Id, conn)
+			if err != nil {
+				Response.Message = err.Error()
+				return intermoni.GCFReturnStruct(Response)
+			}
+			return intermoni.GCFReturnStruct(mentor)
+		}
+		idparam, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			Response.Message = "Invalid id parameter"
+			return intermoni.GCFReturnStruct(Response)
+		}
+		mentor, err = intermoni.GetMentorFromID(idparam, conn)
+		if err != nil {
+			Response.Message = err.Error()
+			return intermoni.GCFReturnStruct(Response)
+		}
+		return intermoni.GCFReturnStruct(mentor)
+	}
+	if user_login.Role == "admin" {
+		if id != "" {
+			idparam, err := primitive.ObjectIDFromHex(id)
+			if err != nil {
+				Response.Message = "Invalid id parameter"
+				return intermoni.GCFReturnStruct(Response)
+			}
+			mentor, err = GetMentorFromIDByAdmin(idparam, conn)
+			if err != nil {
+				Response.Message = err.Error()
+				return intermoni.GCFReturnStruct(Response)
+			}
+			return intermoni.GCFReturnStruct(mentor)
+		}
+		mentor, err := GetAllMentorByAdmin(conn)
+		if err != nil {
+			Response.Message = err.Error()
+			return intermoni.GCFReturnStruct(Response)
+		}
+		return intermoni.GCFReturnStruct(mentor)
+	}
+	Response.Message = "Maneh tidak memiliki akses"
 	return intermoni.GCFReturnStruct(Response)
 }

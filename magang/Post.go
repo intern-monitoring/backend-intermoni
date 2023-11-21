@@ -21,11 +21,8 @@ func TambahMagangOlehMitra(_id primitive.ObjectID, db *mongo.Database, insertedD
 	}
 	magang := bson.M{
 		"posisi": insertedDoc.Posisi,
-		"mitra": intermoni.Mitra{
-			ID: mitra.ID,
-			Akun: intermoni.User{
-				ID: _id,
-			},
+		"mitra": bson.M{
+			"_id": mitra.ID,
 		},
 		"lokasi":             insertedDoc.Lokasi,
 		"createdat":          primitive.NewDateTimeFromTime(time.Now().UTC()),

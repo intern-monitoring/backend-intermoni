@@ -113,6 +113,16 @@ func GetMahasiswaFromID(_id primitive.ObjectID, db *mongo.Database) (doc Mahasis
 		}
 		return doc, fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
 	}
+	user, err := GetUserFromID(doc.Akun.ID, db)
+	if err != nil {
+		return doc, fmt.Errorf("kesalahan server")
+	}
+	akun := User{
+		ID:    user.ID,
+		Email: user.Email,
+		Role:  user.Role,
+	}
+	doc.Akun = akun
 	return doc, nil
 }
 
@@ -150,6 +160,16 @@ func GetMitraFromID(_id primitive.ObjectID, db *mongo.Database) (doc Mitra, err 
 		}
 		return doc, fmt.Errorf("kesalahan server")
 	}
+	user, err := GetUserFromID(doc.Akun.ID, db)
+	if err != nil {
+		return doc, fmt.Errorf("kesalahan server")
+	}
+	akun := User{
+		ID:    user.ID,
+		Email: user.Email,
+		Role:  user.Role,
+	}
+	doc.Akun = akun
 	return doc, nil
 }
 
@@ -160,6 +180,100 @@ func GetMitraFromAkun(id_akun primitive.ObjectID, db *mongo.Database) (doc Mitra
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return doc, fmt.Errorf("mitra tidak ditemukan")
+		}
+		return doc, fmt.Errorf("kesalahan server")
+	}
+	user, err := GetUserFromID(doc.Akun.ID, db)
+	if err != nil {
+		return doc, fmt.Errorf("kesalahan server")
+	}
+	akun := User{
+		ID:    user.ID,
+		Email: user.Email,
+		Role:  user.Role,
+	}
+	doc.Akun = akun
+	return doc, nil
+}
+
+// get pembimbing
+func GetPembimbingFromID(_id primitive.ObjectID, db *mongo.Database) (doc Pembimbing, err error) {
+	collection := db.Collection("pembimbing")
+	filter := bson.M{"_id": _id}
+	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return doc, fmt.Errorf("no data found for ID %s", _id)
+		}
+		return doc, fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
+	}
+	user, err := GetUserFromID(doc.Akun.ID, db)
+	if err != nil {
+		return doc, fmt.Errorf("kesalahan server")
+	}
+	akun := User{
+		ID:    user.ID,
+		Email: user.Email,
+		Role:  user.Role,
+	}
+	doc.Akun = akun
+	return doc, nil
+}
+
+func GetPembimbingFromAkun(id_akun primitive.ObjectID, db *mongo.Database) (doc Pembimbing, err error) {
+	collection := db.Collection("pembimbing")
+	filter := bson.M{"akun._id": id_akun}
+	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return doc, fmt.Errorf("pembimbing tidak ditemukan")
+		}
+		return doc, fmt.Errorf("kesalahan server")
+	}
+	user, err := GetUserFromID(doc.Akun.ID, db)
+	if err != nil {
+		return doc, fmt.Errorf("kesalahan server")
+	}
+	akun := User{
+		ID:    user.ID,
+		Email: user.Email,
+		Role:  user.Role,
+	}
+	doc.Akun = akun
+	return doc, nil
+}
+
+// get mentor
+func GetMentorFromID(_id primitive.ObjectID, db *mongo.Database) (doc Mentor, err error) {
+	collection := db.Collection("mentor")
+	filter := bson.M{"_id": _id}
+	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return doc, fmt.Errorf("no data found for ID %s", _id)
+		}
+		return doc, fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
+	}
+	user, err := GetUserFromID(doc.Akun.ID, db)
+	if err != nil {
+		return doc, fmt.Errorf("kesalahan server")
+	}
+	akun := User{
+		ID:    user.ID,
+		Email: user.Email,
+		Role:  user.Role,
+	}
+	doc.Akun = akun
+	return doc, nil
+}
+
+func GetMentorFromAkun(id_akun primitive.ObjectID, db *mongo.Database) (doc Mentor, err error) {
+	collection := db.Collection("mentor")
+	filter := bson.M{"akun._id": id_akun}
+	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return doc, fmt.Errorf("mentor tidak ditemukan")
 		}
 		return doc, fmt.Errorf("kesalahan server")
 	}
@@ -226,7 +340,7 @@ func GetDetailMahasiswaMagangFromID(_id primitive.ObjectID, db *mongo.Database) 
 		}
 		return mahasiswa_magang, fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
 	}
-	mahasiswa, err := GetMahasiswaFromAkun(mahasiswa_magang.Mahasiswa.Akun.ID, db)
+	mahasiswa, err := GetMahasiswaFromID(mahasiswa_magang.Mahasiswa.ID, db)
 	if err != nil {
 		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID get mahasiswa: %s", err)
 	}
@@ -235,12 +349,17 @@ func GetDetailMahasiswaMagangFromID(_id primitive.ObjectID, db *mongo.Database) 
 	if err != nil {
 		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID get magang: %s", err)
 	}
-	mitra, err := GetMitraFromAkun(magang.Mitra.Akun.ID, db)
-	if err != nil {
-		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID get mitra: %s", err)
-	}
-	magang.Mitra = mitra
 	mahasiswa_magang.Magang = magang
+	pembimbing, err := GetPembimbingFromID(mahasiswa_magang.Pembimbing.ID, db)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID get pembimbing: %s", err)
+	}
+	mahasiswa_magang.Pembimbing = pembimbing
+	mentor, err := GetMentorFromID(mahasiswa_magang.Mentor.ID, db)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID get mentor: %s", err)
+	}
+	mahasiswa_magang.Mentor = mentor
 	return mahasiswa_magang, nil
 }
 
@@ -254,7 +373,24 @@ func GetMahasiswaMagangFromID(_id primitive.ObjectID, db *mongo.Database) (mahas
 		}
 		return mahasiswa_magang, fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
 	}
+	mhs := Mahasiswa{
+		ID: mahasiswa_magang.Mahasiswa.ID,
+	}
+	mahasiswa_magang.Mahasiswa = mhs
 	return mahasiswa_magang, nil
+}
+
+// get report
+func GetReportFromID(_id primitive.ObjectID, db *mongo.Database) (report Report, err error) {
+	filter := bson.M{"_id": _id}
+	err = db.Collection("report").FindOne(context.TODO(), filter).Decode(&report)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return report, fmt.Errorf("no data found for ID %s", _id)
+		}
+		return report, fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
+	}
+	return report, nil
 }
 
 // get user login

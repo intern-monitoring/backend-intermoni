@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	intermoni "github.com/intern-monitoring/backend-intermoni"
+	"github.com/intern-monitoring/backend-intermoni/mahasiswa_magang"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,8 +17,8 @@ func UpdateMitra(idparam, iduser primitive.ObjectID, db *mongo.Database, inserte
 	if err != nil {
 		return err
 	}
-	if CheckMitra_MahasiswaMagang(mitra.ID, db) {
-		return fmt.Errorf("kamu masih dalam proses seleksi")
+	if CheckMitra_MahasiswaMagang(iduser, db) {
+		return fmt.Errorf("kamu masih dalam proses seleksi/magang")
 	}
 	if mitra.ID != idparam {
 		return fmt.Errorf("kamu bukan pemilik data ini")
@@ -66,23 +67,18 @@ func ConfirmMouMitraByAdmin(idparam primitive.ObjectID, db *mongo.Database, inse
 	return nil
 }
 
-func CheckMitra_MahasiswaMagang(idmitra primitive.ObjectID, db *mongo.Database) bool {
-	collection := db.Collection("mahasiswa_magang")
-	filter := bson.M{
-		"magang.mitra._id": idmitra,
-	}
-	count, err := collection.CountDocuments(context.Background(), filter)
-	if err != nil {
-		return false
-	}
+func CheckMitra_MahasiswaMagang(iduser primitive.ObjectID, db *mongo.Database) bool {
+	mitra, _ := intermoni.GetMitraFromAkun(iduser, db)
+	mahasiswa_magang, _ := mahasiswa_magang.GetMahasiswaMagangByMitra(iduser, db)
+	count := len(mahasiswa_magang)
 	if count > 0 {
-		jumlah_gagal := JumlahStatusGagalMahasiswaMagang(idmitra, db)
+		jumlah_gagal := JumlahStatusGagalMahasiswaMagang(mitra.ID, db)
 		return jumlah_gagal != count
 	}
 	return false
 }
 
-func JumlahStatusGagalMahasiswaMagang(idmitra primitive.ObjectID, db *mongo.Database) int64 {
+func JumlahStatusGagalMahasiswaMagang(idmitra primitive.ObjectID, db *mongo.Database) int {
 	collection := db.Collection("mahasiswa_magang")
 	filter := bson.M{
 		"mitra._id": idmitra,
@@ -92,5 +88,6 @@ func JumlahStatusGagalMahasiswaMagang(idmitra primitive.ObjectID, db *mongo.Data
 	if err != nil {
 		return 0
 	}
-	return count
+	countInt := int(count)
+	return countInt
 }

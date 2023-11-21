@@ -10,6 +10,9 @@ import (
 	"github.com/intern-monitoring/backend-intermoni/magang"
 	"github.com/intern-monitoring/backend-intermoni/mahasiswa"
 	"github.com/intern-monitoring/backend-intermoni/mahasiswa_magang"
+	"github.com/intern-monitoring/backend-intermoni/mentor"
+	"github.com/intern-monitoring/backend-intermoni/mitra"
+	"github.com/intern-monitoring/backend-intermoni/pembimbing"
 	"github.com/intern-monitoring/backend-intermoni/signup_mahasiswa"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -19,9 +22,9 @@ import (
 var db = intermoni.MongoConnect("MONGOSTRING", "db_intermoni")
 
 func TestCheckMahasiswaMagang(t *testing.T) {
-	id := "654908fbe2a5ace42ef0fab8"
+	id := "65561a80c2afea0e413128e9"
 	objectId, _ := primitive.ObjectIDFromHex(id)
-	hasil := mahasiswa.CheckMahasiswa_MahasiswaMagang(objectId, db)
+	hasil := mitra.CheckMitra_MahasiswaMagang(objectId, db)
 	fmt.Println(hasil)
 }
 
@@ -100,6 +103,101 @@ func TestGetMahasiswaMagangByMitra(t *testing.T) {
 	hasil, err := mahasiswa_magang.GetMahasiswaMagangByMitra(objectId, db)
 	if err != nil {
 		t.Errorf("Error TestGetMahasiswaMagangByMitra: %v", err)
+	} else {
+		fmt.Println(hasil)
+	}
+}
+
+func TestAddPembimbingByAdmin(t *testing.T) {
+	var doc intermoni.Pembimbing
+	doc.NamaLengkap = "Dimas Ardianto"
+	doc.NIK = "123456789"
+	doc.Akun.Email = "pembimbing1@gmail.com"
+	doc.Akun.Password = "fghjkliow"
+	doc.Akun.Confirmpassword = "fghjkliow"
+	err := pembimbing.AddPembimbingByAdmin(db, doc)
+	if err != nil {
+		t.Errorf("Error inserting document: %v", err)
+	} else {
+		fmt.Println("Data berhasil disimpan dengan nama :", doc.NamaLengkap)
+	}
+}
+
+func TestAddMentorByMitra(t *testing.T) {
+	var doc intermoni.Mentor
+	doc.NamaLengkap = "Dimas Ardianto"
+	doc.NIK = "123456789"
+	doc.Akun.Email = "mentor1@gmail.com"
+	doc.Akun.Password = "fghjkliow"
+	doc.Akun.Confirmpassword = "fghjkliow"
+	id := "65561a80c2afea0e413128e9"
+	objectId, _ := primitive.ObjectIDFromHex(id)
+	err := mentor.AddMentorByMitra(objectId, db, doc)
+	if err != nil {
+		t.Errorf("Error inserting document: %v", err)
+	} else {
+		fmt.Println("Data berhasil disimpan dengan nama :", doc.NamaLengkap)
+	}
+}
+
+func TestGetMahasiswaMagangFromID(t *testing.T) {
+	id := "6558d5332b9d721fd50c3bae"
+	objectId, _ := primitive.ObjectIDFromHex(id)
+	hasil, err := intermoni.GetMahasiswaMagangFromID(objectId, db)
+	if err != nil {
+		t.Errorf("Error TestGetMahasiswaMagangFromID: %v", err)
+	} else {
+		fmt.Println(hasil)
+	}
+}
+
+func TestGetMahasiswaFromAkun(t *testing.T) {
+	id := "6556115b70ac8168bbdd60a5"
+	objectId, _ := primitive.ObjectIDFromHex(id)
+	hasil, err := intermoni.GetMahasiswaFromAkun(objectId, db)
+	if err != nil {
+		t.Errorf("Error TestGetMahasiswaFromAkun: %v", err)
+	} else {
+		fmt.Println(hasil)
+	}
+}
+
+func TestTambahMentorMahasiswaMagangByMitra(t *testing.T) {
+	var doc intermoni.MahasiswaMagang
+	idmahasiswamagang := "6558d5332b9d721fd50c3bae"
+	objectId, _ := primitive.ObjectIDFromHex(idmahasiswamagang)
+	idusermitra := "6556475aeba848c1358caeb0"
+	userid, _ := primitive.ObjectIDFromHex(idusermitra)
+	idmentor := "655b23dee5cedf71d676d640"
+	objectIdmentor, _ := primitive.ObjectIDFromHex(idmentor)
+	doc.Mentor.ID = objectIdmentor
+	err := mahasiswa_magang.TambahMentorMahasiswaMagangByMitra(objectId, userid, db, doc)
+	if err != nil {
+		t.Errorf("Error TestTambahMentorMahasiswaMagangByMitra: %v", err)
+	} else {
+		fmt.Println("Berhasil yey!")
+	}
+}
+
+func TestGetMitraFromAkun(t *testing.T) {
+	id := "6556475aeba848c1358caeb0"
+	objectId, _ := primitive.ObjectIDFromHex(id)
+	hasil, err := intermoni.GetMitraFromAkun(objectId, db)
+	if err != nil {
+		t.Errorf("Error TestGetMitraFromAkun: %v", err)
+	} else {
+		fmt.Println(hasil)
+	}
+}
+
+func TestGetMagangFromIDByMitra(t *testing.T) {
+	idmagang := "655645a0771d6cd0af14ef38"
+	objectId, _ := primitive.ObjectIDFromHex(idmagang)
+	idusermitra := "65561a80c2afea0e413128e9"
+	userid, _ := primitive.ObjectIDFromHex(idusermitra)
+	hasil, err := intermoni.GetMagangFromIDByMitra(objectId, userid, db)
+	if err != nil {
+		t.Errorf("Error TesGetMagangFromIDByMitra: %v", err)
 	} else {
 		fmt.Println(hasil)
 	}

@@ -11,35 +11,28 @@ import (
 )
 
 // by mitra
-func EditMagangOlehMitra(idparam, iduser primitive.ObjectID, db *mongo.Database, insertedDoc intermoni.Magang) error {
-	_, err := intermoni.GetMagangFromIDByMitra(idparam, iduser, db)
+func EditMagangOlehMitra(idmagang, iduser primitive.ObjectID, db *mongo.Database, insertedDoc intermoni.Magang) error {
+	if CheckMagang_MahasiswaMagang(idmagang, db) {
+		return fmt.Errorf("magang masih dalam proses seleksi")
+	}
+	magang, err := intermoni.GetMagangFromIDByMitra(idmagang, iduser, db)
 	if err != nil {
 		return err
-	}
-	if CheckMagang_MahasiswaMagang(idparam, db) {
-		return fmt.Errorf("magang masih dalam proses seleksi")
 	}
 	if insertedDoc.Posisi == "" || insertedDoc.Lokasi == "" || insertedDoc.DeskripsiMagang == "" || insertedDoc.InfoTambahanMagang == "" || insertedDoc.Expired == "" {
 		return fmt.Errorf("mohon untuk melengkapi data")
 	}
-	mitra, err := intermoni.GetMitraFromAkun(iduser, db)
-	if err != nil {
-		return err
-	}
-	magang := bson.M{
+	data := bson.M{
 		"posisi": insertedDoc.Posisi,
-		"mitra": intermoni.Mitra{
-			ID: mitra.ID,
-			Akun: intermoni.User{
-				ID: iduser,
-			},
+		"mitra": bson.M{
+			"_id": magang.Mitra.ID,
 		},
 		"lokasi":             insertedDoc.Lokasi,
 		"deskripsimagang":    insertedDoc.DeskripsiMagang,
 		"infotambahanmagang": insertedDoc.InfoTambahanMagang,
 		"expired":            insertedDoc.Expired,
 	}
-	err = intermoni.UpdateOneDoc(idparam, db, "magang", magang)
+	err = intermoni.UpdateOneDoc(idmagang, db, "magang", data)
 	if err != nil {
 		return err
 	}

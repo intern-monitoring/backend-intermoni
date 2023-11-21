@@ -73,6 +73,7 @@ type Pembimbing struct {
 	ID					primitive.ObjectID	`bson:"_id,omitempty" json:"_id,omitempty"`
 	NamaLengkap			string				`bson:"namalengkap,omitempty" json:"namalengkap,omitempty"`
 	NIK					string				`bson:"nik,omitempty" json:"nik,omitempty"`
+	Prodi				string				`bson:"prodi,omitempty" json:"prodi,omitempty"`
 	Akun				User				`bson:"akun,omitempty" json:"akun,omitempty"`
 }
 
@@ -89,7 +90,7 @@ type Report struct {
 	MahasiswaMagang		MahasiswaMagang		`bson:"mahasiswamagang,omitempty" json:"mahasiswamagang,omitempty"`
 	Judul				string				`bson:"judul,omitempty" json:"judul,omitempty"`
 	Isi					string				`bson:"isi,omitempty" json:"isi,omitempty"`
-	Penerima			primitive.ObjectID	`bson:"penerima,omitempty" json:"penerima,omitempty"`
+	Penerima			User				`bson:"penerima,omitempty" json:"penerima,omitempty"`
 	CreatedAt			primitive.DateTime	`bson:"createdat,omitempty" json:"createdat,omitempty"`
 }
 

@@ -55,6 +55,30 @@ func Get(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 		}
 		return intermoni.GCFReturnStruct(mitra)
 	}
+	if user.Role == "pembimbing" {
+		mitra, err := intermoni.GetPembimbingFromAkun(user.ID, conn)
+		if err != nil {
+			Response.Message = err.Error()
+			return intermoni.GCFReturnStruct(Response)
+		}
+		return intermoni.GCFReturnStruct(mitra)
+	}
+	if user.Role == "mentor" {
+		mitra, err := intermoni.GetMentorFromAkun(user.ID, conn)
+		if err != nil {
+			Response.Message = err.Error()
+			return intermoni.GCFReturnStruct(Response)
+		}
+		return intermoni.GCFReturnStruct(mitra)
+	}
+	if user.Role == "admin" {
+		mitra, err := intermoni.GetUserFromID(user_login.Id, conn)
+		if err != nil {
+			Response.Message = err.Error()
+			return intermoni.GCFReturnStruct(Response)
+		}
+		return intermoni.GCFReturnStruct(mitra)
+	}
 	//
 	Response.Message = "Tidak ada data"
 	return intermoni.GCFReturnStruct(Response)

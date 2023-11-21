@@ -17,7 +17,7 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, ins
 		return err
 	}
 	if CheckMahasiswa_MahasiswaMagang(mahasiswa.ID, db) {
-		return fmt.Errorf("kamu masih dalam proses seleksi")
+		return fmt.Errorf("kamu masih dalam proses seleksi/magang")
 	}
 	if mahasiswa.ID != idparam {
 		return fmt.Errorf("kamu bukan pemilik data ini")

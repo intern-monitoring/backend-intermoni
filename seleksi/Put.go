@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	intermoni "github.com/intern-monitoring/backend-intermoni"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -28,8 +29,18 @@ func SeleksiBerkasMahasiswaMagangByMitra(idmahasiswamagang, iduser primitive.Obj
 		mahasiswa_magang.SeleksiWewancara = 2
 		mahasiswa_magang.Status = 2
 	}
-	mahasiswa_magang.SeleksiBerkas = insertedDoc.SeleksiBerkas
-	err = intermoni.UpdateOneDoc(idmahasiswamagang, db, "mahasiswa_magang", mahasiswa_magang)
+	data := bson.M{
+		"mahasiswa": bson.M{
+			"_id": mahasiswa_magang.Mahasiswa.ID,
+		},
+		"magang": bson.M{
+			"_id": mahasiswa_magang.Magang.ID,
+		},
+		"seleksiberkas":    insertedDoc.SeleksiBerkas,
+		"seleksiwewancara": mahasiswa_magang.SeleksiWewancara,
+		"status": mahasiswa_magang.Status,
+	}
+	err = intermoni.UpdateOneDoc(idmahasiswamagang, db, "mahasiswa_magang", data)
 	if err != nil {
 		return err
 	}
@@ -57,8 +68,18 @@ func SeleksiWewancaraMahasiswaMagangByMitra(idmahasiswamagang, iduser primitive.
 	if insertedDoc.SeleksiWewancara == 2 {
 		mahasiswa_magang.Status = 2
 	}
-	mahasiswa_magang.SeleksiWewancara = insertedDoc.SeleksiWewancara
-	err = intermoni.UpdateOneDoc(idmahasiswamagang, db, "mahasiswa_magang", mahasiswa_magang)
+	data := bson.M{
+		"mahasiswa": bson.M{
+			"_id": mahasiswa_magang.Mahasiswa.ID,
+		},
+		"magang": bson.M{
+			"_id": mahasiswa_magang.Magang.ID,
+		},
+		"seleksiberkas":    mahasiswa_magang.SeleksiBerkas,
+		"seleksiwewancara": insertedDoc.SeleksiWewancara,
+		"status": mahasiswa_magang.Status,
+	}
+	err = intermoni.UpdateOneDoc(idmahasiswamagang, db, "mahasiswa_magang", data)
 	if err != nil {
 		return err
 	}

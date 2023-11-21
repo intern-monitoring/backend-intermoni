@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	intermoni "github.com/intern-monitoring/backend-intermoni"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var (
@@ -38,5 +39,40 @@ func Post(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request
 	//
 	Response.Status = true
 	Response.Message = "Berhasil Add Pembimbing"
+	return intermoni.GCFReturnStruct(Response)
+}
+
+func Get(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
+	conn := intermoni.MongoConnect(MONGOCONNSTRINGENV, dbname)
+	Response.Status = false
+	//
+	user_login, err := intermoni.GetUserLogin(PASETOPUBLICKEYENV, r)
+	if err != nil {
+		Response.Message = "Gagal Decode Token : " + err.Error()
+		return intermoni.GCFReturnStruct(Response)
+	}
+	id := intermoni.GetID(r)
+	if user_login.Role == "admin" {
+		if id == "" {
+			pembimbing, err := GetAllPembimbingByAdmin(conn)
+			if err != nil {
+				Response.Message = err.Error()
+				return intermoni.GCFReturnStruct(Response)
+			}
+			return intermoni.GCFReturnStruct(pembimbing)
+		}
+		idparam, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			Response.Message = err.Error()
+			return intermoni.GCFReturnStruct(Response)
+		}
+		pembimbing, err := intermoni.GetPembimbingFromID(idparam, conn)
+		if err != nil {
+			Response.Message = err.Error()
+			return intermoni.GCFReturnStruct(Response)
+		}
+		return intermoni.GCFReturnStruct(pembimbing)
+	}
+	Response.Message = "Maneh tidak memiliki akses"
 	return intermoni.GCFReturnStruct(Response)
 }

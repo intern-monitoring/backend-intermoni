@@ -2,7 +2,6 @@ package report
 
 import (
 	"fmt"
-	"time"
 
 	intermoni "github.com/intern-monitoring/backend-intermoni"
 	"go.mongodb.org/mongo-driver/bson"
@@ -10,17 +9,21 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func TambahReportByMahasiswa(idmahasiswamagang, iduser primitive.ObjectID, db *mongo.Database, insertedDoc intermoni.Report) error {
+func UpdateReport(idreport, iduser primitive.ObjectID, db *mongo.Database, insertedDoc intermoni.Report) error {
 	mahasiswa, err := intermoni.GetMahasiswaFromAkun(iduser, db)
 	if err != nil {
 		return err
 	}
-	mahasiswa_magang, err := intermoni.GetMahasiswaMagangFromID(idmahasiswamagang, db)
+	report, err := intermoni.GetReportFromID(idreport, db)
 	if err != nil {
 		return err
 	}
-	if mahasiswa.ID != mahasiswa_magang.Mahasiswa.ID {
-		return fmt.Errorf("kamu bukan mahasiswa magang ini")
+	mahasiswa_magang, err := intermoni.GetMahasiswaMagangFromID(report.MahasiswaMagang.ID, db)
+	if err != nil {
+		return err
+	}
+	if mahasiswa_magang.Mahasiswa.ID != mahasiswa.ID {
+		return fmt.Errorf("kamu bukan pemilik report ini")
 	}
 	if mahasiswa_magang.Status != 1 {
 		return fmt.Errorf("kamu belum melakukan kontrak magang")
@@ -35,14 +38,14 @@ func TambahReportByMahasiswa(idmahasiswamagang, iduser primitive.ObjectID, db *m
 		"mahasiswamagang": bson.M{
 			"_id": mahasiswa_magang.ID,
 		},
-		"judul":    insertedDoc.Judul,
-		"isi":      insertedDoc.Isi,
+		"judul": insertedDoc.Judul,
+		"isi":   insertedDoc.Isi,
 		"penerima": bson.M{
 			"_id": insertedDoc.Penerima.ID,
 		},
-		"createdat": primitive.NewDateTimeFromTime(time.Now().UTC()),
+		"createdat": report.CreatedAt,
 	}
-	_, err = intermoni.InsertOneDoc(db, "report", data)
+	err = intermoni.UpdateOneDoc(idreport, db, "report", data)
 	if err != nil {
 		return err
 	}
