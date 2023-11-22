@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func UpdateReport(idreport, iduser primitive.ObjectID, db *mongo.Database, insertedDoc intermoni.Report) error {
+func UpdateReportByMahasiswa(idreport, iduser primitive.ObjectID, db *mongo.Database, insertedDoc intermoni.Report) error {
 	mahasiswa, err := intermoni.GetMahasiswaFromAkun(iduser, db)
 	if err != nil {
 		return err
