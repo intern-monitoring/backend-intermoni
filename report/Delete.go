@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func DeleteReport(idreport, iduser primitive.ObjectID, db *mongo.Database) error {
+func DeleteReportByMahasiswa(idreport, iduser primitive.ObjectID, db *mongo.Database) error {
 	mahasiswa, err := intermoni.GetMahasiswaFromAkun(iduser, db)
 	if err != nil {
 		return err
