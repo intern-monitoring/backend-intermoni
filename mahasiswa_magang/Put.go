@@ -30,7 +30,7 @@ func TambahMentorMahasiswaMagangByMitra(idmahasiswamagang, iduser primitive.Obje
 	}
 	data := bson.M{
 		"mahasiswa": bson.M{
-			"_id": mahasiswa_magang.Magang.ID,
+			"_id": mahasiswa_magang.Mahasiswa.ID,
 		},
 		"magang": bson.M{
 			"_id": mahasiswa_magang.Magang.ID,
@@ -69,7 +69,7 @@ func TambahPembimbingMahasiswaMagangByAdmin(idmahasiswamagang primitive.ObjectID
 	}
 	data := bson.M{
 		"mahasiswa": bson.M{
-			"_id": mahasiswa_magang.Magang.ID,
+			"_id": mahasiswa_magang.Mahasiswa.ID,
 		},
 		"magang": bson.M{
 			"_id": mahasiswa_magang.Magang.ID,
