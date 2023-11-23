@@ -12,7 +12,7 @@ import (
 )
 
 // by admin
-func GetMahasiswaMagangByAdmin(db *mongo.Database) (mahasiswa_magang []intermoni.MahasiswaMagang, err error) {
+func GetMahasiswaSeleksiByAdmin(db *mongo.Database) (mahasiswa_magang []intermoni.MahasiswaMagang, err error) {
 	collection := db.Collection("mahasiswa_magang")
 	filter := bson.M{}
 	cursor, err := collection.Find(context.Background(), filter)
@@ -34,18 +34,42 @@ func GetMahasiswaMagangByAdmin(db *mongo.Database) (mahasiswa_magang []intermoni
 			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get magang: %s", err)
 		}
 		m.Magang = magang
+		mahasiswa_magang = append(mahasiswa_magang, m)
+		mahasiswa_magang = mahasiswa_magang[1:]
+	}
+	return mahasiswa_magang, nil
+}
+
+func GetMahasiswaMagangByAdmin(db *mongo.Database) (mahasiswa_magang []intermoni.MahasiswaMagang, err error) {
+	collection := db.Collection("mahasiswa_magang")
+	filter := bson.M{"status": 3}
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin mongo: %s", err)
+	}
+	err = cursor.All(context.Background(), &mahasiswa_magang)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin context: %s", err)
+	}
+	for _, m := range mahasiswa_magang {
+		mahasiswa, err := intermoni.GetMahasiswaFromID(m.Mahasiswa.ID, db)
+		if err != nil {
+			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get mahasiswa: %s", err)
+		}
+		m.Mahasiswa = mahasiswa
+		magang, err := intermoni.GetMagangFromID(m.Magang.ID, db)
+		if err != nil {
+			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get magang: %s", err)
+		}
+		m.Magang = magang
 		pembimbing, err := intermoni.GetPembimbingFromID(m.Pembimbing.ID, db)
 		if err != nil {
-			mahasiswa_magang = append(mahasiswa_magang, m)
-			mahasiswa_magang = mahasiswa_magang[1:]
-			return mahasiswa_magang, nil
+			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get pembimbing: %s", err)
 		}
 		m.Pembimbing = pembimbing
 		mentor, err := intermoni.GetMentorFromID(m.Mentor.ID, db)
 		if err != nil {
-			mahasiswa_magang = append(mahasiswa_magang, m)
-			mahasiswa_magang = mahasiswa_magang[1:]
-			return mahasiswa_magang, nil
+			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get mentor: %s", err)
 		}
 		m.Mentor = mentor
 		mahasiswa_magang = append(mahasiswa_magang, m)
@@ -55,7 +79,7 @@ func GetMahasiswaMagangByAdmin(db *mongo.Database) (mahasiswa_magang []intermoni
 }
 
 // by mahasiswa
-func GetMahasiswaMagangByMahasiswa(_id primitive.ObjectID, db *mongo.Database) (mahasiswa_magang []intermoni.MahasiswaMagang, err error) {
+func GetMahasiswaSeleksiByMahasiswa(_id primitive.ObjectID, db *mongo.Database) (mahasiswa_magang []intermoni.MahasiswaMagang, err error) {
 	collection := db.Collection("mahasiswa_magang")
 	mahasiswa, err := intermoni.GetMahasiswaFromAkun(_id, db)
 	if err != nil {
@@ -76,18 +100,41 @@ func GetMahasiswaMagangByMahasiswa(_id primitive.ObjectID, db *mongo.Database) (
 			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get magang: %s", err)
 		}
 		m.Magang = magang
+		mahasiswa_magang = append(mahasiswa_magang, m)
+		mahasiswa_magang = mahasiswa_magang[1:]
+	}
+	return mahasiswa_magang, nil
+}
+
+func GetMahasiswaMagangByMahasiswa(_id primitive.ObjectID, db *mongo.Database) (mahasiswa_magang []intermoni.MahasiswaMagang, err error) {
+	collection := db.Collection("mahasiswa_magang")
+	mahasiswa, err := intermoni.GetMahasiswaFromAkun(_id, db)
+	if err != nil {
+		return mahasiswa_magang, err
+	}
+	filter := bson.M{"mahasiswa._id": mahasiswa.ID, "status": 3}
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByMahasiswa mongo: %s", err)
+	}
+	err = cursor.All(context.Background(), &mahasiswa_magang)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByMahasiswa context: %s", err)
+	}
+	for _, m := range mahasiswa_magang {
+		magang, err := intermoni.GetMagangFromID(m.Magang.ID, db)
+		if err != nil {
+			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get magang: %s", err)
+		}
+		m.Magang = magang
 		pembimbing, err := intermoni.GetPembimbingFromID(m.Pembimbing.ID, db)
 		if err != nil {
-			mahasiswa_magang = append(mahasiswa_magang, m)
-			mahasiswa_magang = mahasiswa_magang[1:]
-			return mahasiswa_magang, nil
+			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get pembimbing: %s", err)
 		}
 		m.Pembimbing = pembimbing
 		mentor, err := intermoni.GetMentorFromID(m.Mentor.ID, db)
 		if err != nil {
-			mahasiswa_magang = append(mahasiswa_magang, m)
-			mahasiswa_magang = mahasiswa_magang[1:]
-			return mahasiswa_magang, nil
+			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get mentor: %s", err)
 		}
 		m.Mentor = mentor
 		mahasiswa_magang = append(mahasiswa_magang, m)
@@ -97,13 +144,13 @@ func GetMahasiswaMagangByMahasiswa(_id primitive.ObjectID, db *mongo.Database) (
 }
 
 // by mitra
-func GetMahasiswaMagangByMitra(iduser primitive.ObjectID, db *mongo.Database) (mahasiswa_magang []intermoni.MahasiswaMagang, err error) {
+func GetMahasiswaSeleksiByMitra(iduser primitive.ObjectID, db *mongo.Database) (mahasiswa_magang []intermoni.MahasiswaMagang, err error) {
 	magang, err := magang.GetAllMagangByMitra(iduser, db)
 	if err != nil {
 		return mahasiswa_magang, err
 	}
 	for _, m := range magang {
-		mahasiswa_mgn, err := GetAllMahasiswaMagangFromMagangByMitra(m.ID, iduser, db)
+		mahasiswa_mgn, err := GetAllMahasiswaSeleksiFromMagangByMitra(m.ID, iduser, db)
 		if err != nil {
 			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get mahasiswa: %s", err)
 		}
@@ -112,7 +159,7 @@ func GetMahasiswaMagangByMitra(iduser primitive.ObjectID, db *mongo.Database) (m
 	return mahasiswa_magang, nil
 }
 
-func GetAllMahasiswaMagangFromMagangByMitra(idmagang, iduser primitive.ObjectID, db *mongo.Database) (mahasiswa_magang []intermoni.MahasiswaMagang, err error) {
+func GetAllMahasiswaSeleksiFromMagangByMitra(idmagang, iduser primitive.ObjectID, db *mongo.Database) (mahasiswa_magang []intermoni.MahasiswaMagang, err error) {
 	collection := db.Collection("mahasiswa_magang")
 	filter := bson.M{"magang._id": idmagang}
 	cursor, err := collection.Find(context.Background(), filter)
@@ -134,11 +181,52 @@ func GetAllMahasiswaMagangFromMagangByMitra(idmagang, iduser primitive.ObjectID,
 			return mahasiswa_magang, fmt.Errorf("error GetAllMahasiswaMagangFromMagangByMitra get magang: %s", err)
 		}
 		m.Magang = magang
+		mahasiswa_magang = append(mahasiswa_magang, m)
+		mahasiswa_magang = mahasiswa_magang[1:]
+	}
+	return mahasiswa_magang, nil
+}
+
+func GetMahasiswaMagangByMitra(iduser primitive.ObjectID, db *mongo.Database) (mahasiswa_magang []intermoni.MahasiswaMagang, err error) {
+	magang, err := magang.GetAllMagangByMitra(iduser, db)
+	if err != nil {
+		return mahasiswa_magang, err
+	}
+	for _, m := range magang {
+		mahasiswa_mgn, err := GetAllMahasiswaMagangFromMagangByMitra(m.ID, iduser, db)
+		if err != nil {
+			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get mahasiswa: %s", err)
+		}
+		mahasiswa_magang = append(mahasiswa_magang, mahasiswa_mgn...)
+	}
+	return mahasiswa_magang, nil
+}
+
+func GetAllMahasiswaMagangFromMagangByMitra(idmagang, iduser primitive.ObjectID, db *mongo.Database) (mahasiswa_magang []intermoni.MahasiswaMagang, err error) {
+	collection := db.Collection("mahasiswa_magang")
+	filter := bson.M{"magang._id": idmagang, "status": 3}
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetAllMahasiswaMagangFromMagangByMitra mongo: %s", err)
+	}
+	err = cursor.All(context.Background(), &mahasiswa_magang)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetAllMahasiswaMagangFromMagangByMitra context: %s", err)
+	}
+	for _, m := range mahasiswa_magang {
+		mahasiswa, err := intermoni.GetMahasiswaFromID(m.Mahasiswa.ID, db)
+		if err != nil {
+			return mahasiswa_magang, fmt.Errorf("error GetAllMahasiswaMagangFromMagangByMitra get mahasiswa: %s", err)
+		}
+		m.Mahasiswa = mahasiswa
+		magang, err := intermoni.GetMagangFromIDByMitra(m.Magang.ID, iduser, db)
+		if err != nil {
+			return mahasiswa_magang, fmt.Errorf("error GetAllMahasiswaMagangFromMagangByMitra get magang: %s", err)
+		}
+		m.Magang = magang
 		mentor, err := intermoni.GetMentorFromID(m.Mentor.ID, db)
 		if err != nil {
-			mahasiswa_magang = append(mahasiswa_magang, m)
-			mahasiswa_magang = mahasiswa_magang[1:]
-			return mahasiswa_magang, nil
+			return mahasiswa_magang, fmt.Errorf("error GetAllMahasiswaMagangFromMagangByMitra get mentor: %s", err)
 		}
 		m.Mentor = mentor
 		mahasiswa_magang = append(mahasiswa_magang, m)
@@ -146,3 +234,55 @@ func GetAllMahasiswaMagangFromMagangByMitra(idmagang, iduser primitive.ObjectID,
 	}
 	return mahasiswa_magang, nil
 }
+
+// get by id mahasiswa magang
+func GetMahasiswaSeleksiFromID(idmahasiswamagang primitive.ObjectID, db *mongo.Database) (mahasiswa_magang intermoni.MahasiswaMagang, err error) {
+	collection := db.Collection("mahasiswa_magang")
+	filter := bson.M{"_id": idmahasiswamagang}
+	err = collection.FindOne(context.Background(), filter).Decode(&mahasiswa_magang)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID: %s", err)
+	}
+	mahasiswa, err := intermoni.GetMahasiswaFromID(mahasiswa_magang.Mahasiswa.ID, db)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID get mahasiswa: %s", err)
+	}
+	mahasiswa_magang.Mahasiswa = mahasiswa
+	magang, err := intermoni.GetMagangFromID(mahasiswa_magang.Magang.ID, db)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID get magang: %s", err)
+	}
+	mahasiswa_magang.Magang = magang
+	return mahasiswa_magang, nil
+}
+
+func GetMahasiswaMagangFromID(idmahasiswamagang primitive.ObjectID, db *mongo.Database) (mahasiswa_magang intermoni.MahasiswaMagang, err error) {
+	collection := db.Collection("mahasiswa_magang")
+	filter := bson.M{"_id": idmahasiswamagang, "status": 3}
+	err = collection.FindOne(context.Background(), filter).Decode(&mahasiswa_magang)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID: %s", err)
+	}
+	mahasiswa, err := intermoni.GetMahasiswaFromID(mahasiswa_magang.Mahasiswa.ID, db)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID get mahasiswa: %s", err)
+	}
+	mahasiswa_magang.Mahasiswa = mahasiswa
+	magang, err := intermoni.GetMagangFromID(mahasiswa_magang.Magang.ID, db)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID get magang: %s", err)
+	}
+	mahasiswa_magang.Magang = magang
+	pembimbing, err := intermoni.GetPembimbingFromID(mahasiswa_magang.Pembimbing.ID, db)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID get pembimbing: %s", err)
+	}
+	mahasiswa_magang.Pembimbing = pembimbing
+	mentor, err := intermoni.GetMentorFromID(mahasiswa_magang.Mentor.ID, db)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangFromID get mentor: %s", err)
+	}
+	mahasiswa_magang.Mentor = mentor
+	return mahasiswa_magang, nil
+}
+

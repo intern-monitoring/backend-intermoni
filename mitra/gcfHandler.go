@@ -98,7 +98,7 @@ func Get(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 		return GetMitraByMitra(user_login.Id, conn)
 	}
 	if user_login.Role == "admin" {
-		return GCFHandlerGetMitraByAdmin(conn, r)
+		return GetMitraByAdmin(conn, r)
 	}
 	//
 	Response.Message = "Maneh tidak memiliki akses"
@@ -117,7 +117,7 @@ func GetMitraByMitra(iduser primitive.ObjectID, conn *mongo.Database) string {
 	return intermoni.GCFReturnStruct(mitra)
 }
 
-func GCFHandlerGetMitraByAdmin(conn *mongo.Database, r *http.Request) string {
+func GetMitraByAdmin(conn *mongo.Database, r *http.Request) string {
 	Response.Status = false
 	//
 	id := intermoni.GetID(r)

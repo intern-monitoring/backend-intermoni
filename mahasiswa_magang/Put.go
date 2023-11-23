@@ -25,6 +25,9 @@ func TambahMentorMahasiswaMagangByMitra(idmahasiswamagang, iduser primitive.Obje
 	if insertedDoc.Mentor.ID == primitive.NilObjectID {
 		return fmt.Errorf("mentor tidak boleh kosong")
 	}
+	if mahasiswa_magang.Pembimbing.ID != primitive.NilObjectID {
+		mahasiswa_magang.Status = 3
+	}
 	data := bson.M{
 		"mahasiswa": bson.M{
 			"_id": mahasiswa_magang.Magang.ID,
@@ -60,6 +63,9 @@ func TambahPembimbingMahasiswaMagangByAdmin(idmahasiswamagang primitive.ObjectID
 	}
 	if insertedDoc.Pembimbing.ID == primitive.NilObjectID {
 		return fmt.Errorf("pembimbing tidak boleh kosong")
+	}
+	if mahasiswa_magang.Mentor.ID != primitive.NilObjectID {
+		mahasiswa_magang.Status = 3
 	}
 	data := bson.M{
 		"mahasiswa": bson.M{

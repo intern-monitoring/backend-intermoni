@@ -133,6 +133,14 @@ func Get(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 		}
 		return intermoni.GCFReturnStruct(mentor)
 	}
+	if user_login.Role == "mentor" {
+		mentor, err := intermoni.GetMentorFromAkun(user_login.Id, conn)
+		if err != nil {
+			Response.Message = err.Error()
+			return intermoni.GCFReturnStruct(Response)
+		}
+		return intermoni.GCFReturnStruct(mentor)
+	}
 	Response.Message = "Maneh tidak memiliki akses"
 	return intermoni.GCFReturnStruct(Response)
 }

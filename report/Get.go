@@ -26,6 +26,28 @@ func GetAllReportByMahasiswa(_id primitive.ObjectID, db *mongo.Database) (report
 	if err != nil {
 		return report, fmt.Errorf("error GetAllReportByMahasiswa context: %s", err)
 	}
+	for _, r := range report {
+		mahasiswa_magang, err := intermoni.GetMahasiswaMagangFromID(r.MahasiswaMagang.ID, db)
+		if err != nil {
+			return report, fmt.Errorf("error GetAllReportByMahasiswa get mahasiswa magang: %s", err)
+		}
+		magang, err := intermoni.GetMagangFromID(mahasiswa_magang.Magang.ID, db)
+		if err != nil {
+			return report, fmt.Errorf("error GetAllReportByMahasiswa get magang: %s", err)
+		}
+		mahasiswa_magang.Magang = magang
+		penerima, err := intermoni.GetUserFromID(r.Penerima.ID, db)
+		if err != nil {
+			return report, fmt.Errorf("error GetAllReportByMahasiswa get penerima: %s", err)
+		}
+		akun := intermoni.User{
+			ID:    penerima.ID,
+			Email: penerima.Email,
+		}
+		r.Penerima = akun
+		report = append(report, r)
+		report = report[1:]
+	}
 	return report, nil
 }
 
@@ -59,5 +81,39 @@ func GetAllReportByPenerima(_id primitive.ObjectID, db *mongo.Database) (report 
 		report = append(report, r)
 		report = report[1:]
 	}
+	return report, nil
+}
+
+func GetReportByID(_id primitive.ObjectID, db *mongo.Database) (report intermoni.Report, err error) {
+	collection := db.Collection("report")
+	filter := bson.M{"_id": _id}
+	err = collection.FindOne(context.Background(), filter).Decode(&report)
+	if err != nil {
+		return report, fmt.Errorf("error GetReportByID: %s", err)
+	}
+	mahasiswa_magang, err := intermoni.GetMahasiswaMagangFromID(report.MahasiswaMagang.ID, db)
+	if err != nil {
+		return report, fmt.Errorf("error GetReportByID get mahasiswa magang: %s", err)
+	}
+	mahasiswa, err := intermoni.GetMahasiswaFromID(mahasiswa_magang.Mahasiswa.ID, db)
+	if err != nil {
+		return report, fmt.Errorf("error GetReportByID get mahasiswa: %s", err)
+	}
+	mahasiswa_magang.Mahasiswa = mahasiswa
+	magang, err := intermoni.GetMagangFromID(mahasiswa_magang.Magang.ID, db)
+	if err != nil {
+		return report, fmt.Errorf("error GetReportByID get magang: %s", err)
+	}
+	mahasiswa_magang.Magang = magang
+	penerima, err := intermoni.GetUserFromID(report.Penerima.ID, db)
+	if err != nil {
+		return report, fmt.Errorf("error GetReportByID get penerima: %s", err)
+	}
+	akun := intermoni.User{
+		ID:    penerima.ID,
+		Email: penerima.Email,
+	}
+	report.Penerima = akun
+	report.MahasiswaMagang = mahasiswa_magang
 	return report, nil
 }

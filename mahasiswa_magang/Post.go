@@ -33,6 +33,12 @@ func ApplyMagang(idmagang, iduser primitive.ObjectID, db *mongo.Database) error 
 		"magang": bson.M{
 			"_id": magang.ID,
 		},
+		"pembimbing": bson.M{
+			"_id": primitive.NilObjectID,
+		},
+		"mentor": bson.M{
+			"_id": primitive.NilObjectID,
+		},
 		"seleksiberkas":    0,
 		"seleksiwewancara": 0,
 		"status": 0,

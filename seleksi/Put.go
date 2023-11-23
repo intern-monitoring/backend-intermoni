@@ -36,6 +36,12 @@ func SeleksiBerkasMahasiswaMagangByMitra(idmahasiswamagang, iduser primitive.Obj
 		"magang": bson.M{
 			"_id": mahasiswa_magang.Magang.ID,
 		},
+		"pembimbing": bson.M{
+			"_id": mahasiswa_magang.Pembimbing.ID,
+		},
+		"mentor": bson.M{
+			"_id": mahasiswa_magang.Mentor.ID,
+		},
 		"seleksiberkas":    insertedDoc.SeleksiBerkas,
 		"seleksiwewancara": mahasiswa_magang.SeleksiWewancara,
 		"status": mahasiswa_magang.Status,
@@ -74,6 +80,12 @@ func SeleksiWewancaraMahasiswaMagangByMitra(idmahasiswamagang, iduser primitive.
 		},
 		"magang": bson.M{
 			"_id": mahasiswa_magang.Magang.ID,
+		},
+		"pembimbing": bson.M{
+			"_id": mahasiswa_magang.Pembimbing.ID,
+		},
+		"mentor": bson.M{
+			"_id": mahasiswa_magang.Mentor.ID,
 		},
 		"seleksiberkas":    mahasiswa_magang.SeleksiBerkas,
 		"seleksiwewancara": insertedDoc.SeleksiWewancara,

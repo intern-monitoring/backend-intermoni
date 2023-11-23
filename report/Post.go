@@ -19,13 +19,21 @@ func TambahReportByMahasiswa(idmahasiswamagang, iduser primitive.ObjectID, db *m
 	if err != nil {
 		return err
 	}
+	pembimbing, err := intermoni.GetPembimbingFromAkun(insertedDoc.Penerima.ID, db)
+	if err != nil {
+		return err
+	}
+	mentor, err := intermoni.GetMentorFromAkun(insertedDoc.Penerima.ID, db)
+	if err != nil {
+		return err
+	}
 	if mahasiswa.ID != mahasiswa_magang.Mahasiswa.ID {
 		return fmt.Errorf("kamu bukan mahasiswa magang ini")
 	}
-	if mahasiswa_magang.Status != 1 {
-		return fmt.Errorf("kamu belum melakukan kontrak magang")
+	if mahasiswa_magang.Status != 3 {
+		return fmt.Errorf("kamu belum memiliki pembimbing/mentor")
 	}
-	if insertedDoc.Penerima.ID != mahasiswa_magang.Pembimbing.ID && insertedDoc.Penerima.ID != mahasiswa_magang.Mentor.ID {
+	if pembimbing.ID != mahasiswa_magang.Pembimbing.ID && mentor.ID != mahasiswa_magang.Mentor.ID {
 		return fmt.Errorf("kamu tidak dapat memberikan report selain kepada pembimbing dan mentor kamu")
 	}
 	if insertedDoc.Judul == "" || insertedDoc.Isi == "" || insertedDoc.Penerima.ID == primitive.NilObjectID {

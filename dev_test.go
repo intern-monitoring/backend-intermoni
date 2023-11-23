@@ -97,14 +97,25 @@ func TestGetMitraByMoU(t *testing.T) {
 	}
 }
 
-func TestGetMahasiswaMagangByMitra(t *testing.T) {
-	id := "65561a80c2afea0e413128e9"
-	objectId, _ := primitive.ObjectIDFromHex(id)
-	hasil, err := mahasiswa_magang.GetMahasiswaMagangByMitra(objectId, db)
+func TestGetMahasiswaMagangByAdmin3(t *testing.T) {
+	hasil, err := mahasiswa_magang.GetMahasiswaSeleksiByAdmin(db)
 	if err != nil {
-		t.Errorf("Error TestGetMahasiswaMagangByMitra: %v", err)
+		t.Errorf("Error TestGetMahasiswaMagangByAdmin: %v", err)
 	} else {
 		fmt.Println(hasil)
+	}
+}
+
+func TestApplyMagang(t *testing.T) {
+	idusermahasiswa := "6556115b70ac8168bbdd60a5"
+	objectIduser, _ := primitive.ObjectIDFromHex(idusermahasiswa)
+	idmagang := "65574ee2280f777d0871f829"
+	objectIdmagang, _ := primitive.ObjectIDFromHex(idmagang)
+	err := mahasiswa_magang.ApplyMagang(objectIdmagang, objectIduser, db)
+	if err != nil {
+		t.Errorf("Error TestApplyMagang: %v", err)
+	} else {
+		fmt.Println("Berhasil yey!")
 	}
 }
 

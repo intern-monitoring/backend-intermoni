@@ -18,5 +18,19 @@ func GetAllPembimbingByAdmin(db *mongo.Database) (pembimbing []intermoni.Pembimb
 	if err = cursor.All(context.Background(), &pembimbing); err != nil {
 		return nil, err
 	}
+	for _, p := range pembimbing {
+		user, err := intermoni.GetUserFromID(p.Akun.ID, db)
+		if err != nil {
+			return nil, err
+		}
+		akun := intermoni.User{
+			ID:    user.ID,
+			Email: user.Email,
+			Role:  user.Role,
+		}
+		p.Akun = akun
+		pembimbing = append(pembimbing, p)
+		pembimbing = pembimbing[1:]
+	}
 	return pembimbing, nil
 }

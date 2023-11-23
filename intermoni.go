@@ -373,10 +373,6 @@ func GetMahasiswaMagangFromID(_id primitive.ObjectID, db *mongo.Database) (mahas
 		}
 		return mahasiswa_magang, fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
 	}
-	mhs := Mahasiswa{
-		ID: mahasiswa_magang.Mahasiswa.ID,
-	}
-	mahasiswa_magang.Mahasiswa = mhs
 	return mahasiswa_magang, nil
 }
 

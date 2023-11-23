@@ -24,6 +24,20 @@ func GetAllMentorByMitra(iduser primitive.ObjectID, db *mongo.Database) (mentor 
 	if err = cursor.All(context.Background(), &mentor); err != nil {
 		return nil, err
 	}
+	for _, m := range mentor {
+		user, err := intermoni.GetUserFromID(m.Akun.ID, db)
+		if err != nil {
+			return nil, fmt.Errorf("error GetAllMentorByMitra get user: %s", err)
+		}
+		akun := intermoni.User{
+			ID: user.ID,
+			Email: user.Email,
+			Role: user.Role,
+		}
+		m.Akun = akun
+		mentor = append(mentor, m)
+		mentor = mentor[1:]
+	}
 	return mentor, nil
 }
 
@@ -36,6 +50,20 @@ func GetAllMentorByAdmin(db *mongo.Database) (mentor []intermoni.Mentor, err err
 	}
 	if err = cursor.All(context.Background(), &mentor); err != nil {
 		return nil, err
+	}
+	for _, m := range mentor {
+		user, err := intermoni.GetUserFromID(m.Akun.ID, db)
+		if err != nil {
+			return nil, fmt.Errorf("error GetAllMentorByAdmin get user: %s", err)
+		}
+		akun := intermoni.User{
+			ID: user.ID,
+			Email: user.Email,
+			Role: user.Role,
+		}
+		m.Akun = akun
+		mentor = append(mentor, m)
+		mentor = mentor[1:]
 	}
 	return mentor, nil
 }
