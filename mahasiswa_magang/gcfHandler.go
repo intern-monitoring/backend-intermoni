@@ -152,7 +152,7 @@ func Get(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 		return intermoni.GCFReturnStruct(Response)
 	}
 	path, id := GetPathAndID(r)
-	if path == "/mahasiswa-magang/seleksi" {
+	if path == "/intermoni-mahasiswa-magang/seleksi" {
 		if id == "" {
 			return GetAllMahasiwaSeleksi(user_login, conn)
 		}
