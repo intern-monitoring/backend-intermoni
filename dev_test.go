@@ -97,7 +97,7 @@ func TestGetMitraByMoU(t *testing.T) {
 	}
 }
 
-func TestGetMahasiswaMagangByAdmin3(t *testing.T) {
+func TestGetMahasiswaSeleksiByAdmin(t *testing.T) {
 	hasil, err := mahasiswa_magang.GetMahasiswaSeleksiByAdmin(db)
 	if err != nil {
 		t.Errorf("Error TestGetMahasiswaMagangByAdmin: %v", err)
