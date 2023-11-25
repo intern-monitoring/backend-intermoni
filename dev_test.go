@@ -99,7 +99,7 @@ func TestGetMitraByMoU(t *testing.T) {
 }
 
 func TestGetMahasiswaSeleksiByAdmin(t *testing.T) {
-	hasil, err := mahasiswa_magang.GetMahasiswaSeleksiByAdmin(db)
+	hasil, err := mahasiswa_magang.GetMahasiswaMagangByAdmin(db)
 	if err != nil {
 		t.Errorf("Error TestGetMahasiswaMagangByAdmin: %v", err)
 	} else {
