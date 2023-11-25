@@ -13,6 +13,7 @@ import (
 	"github.com/intern-monitoring/backend-intermoni/mentor"
 	"github.com/intern-monitoring/backend-intermoni/mitra"
 	"github.com/intern-monitoring/backend-intermoni/pembimbing"
+	"github.com/intern-monitoring/backend-intermoni/seleksi"
 	"github.com/intern-monitoring/backend-intermoni/signup_mahasiswa"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -211,6 +212,21 @@ func TestGetMagangFromIDByMitra(t *testing.T) {
 		t.Errorf("Error TesGetMagangFromIDByMitra: %v", err)
 	} else {
 		fmt.Println(hasil)
+	}
+}
+
+func TestSeleksiBerkasMahasiswaMagangByMitra2(t *testing.T) {
+	idmahasiswamagang := "655f05bde32b38e68e7a1a20"
+	objectIdmahasiswamagang, _ := primitive.ObjectIDFromHex(idmahasiswamagang)
+	idusermitra := "65561a80c2afea0e413128e9"
+	userid, _ := primitive.ObjectIDFromHex(idusermitra)
+	var doc intermoni.MahasiswaMagang
+	doc.SeleksiWewancara = 1
+	err := seleksi.SeleksiBerkasMahasiswaMagangByMitra(objectIdmahasiswamagang, userid, db, doc)
+	if err != nil {
+		t.Errorf("Error TestSeleksiBerkasMahasiswaMagangByMitra: %v", err)
+	} else {
+		fmt.Println("Berhasil yey!")
 	}
 }
 
