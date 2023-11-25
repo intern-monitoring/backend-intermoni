@@ -16,7 +16,7 @@ import (
 
 func AddPembimbingByAdmin(db *mongo.Database, insertedDoc intermoni.Pembimbing) error {
 	objectId := primitive.NewObjectID()
-	if insertedDoc.NamaLengkap == "" || insertedDoc.NIK == "" || insertedDoc.Akun.Email == "" || insertedDoc.Akun.Password == "" {
+	if insertedDoc.NamaLengkap == "" || insertedDoc.NIK == "" || insertedDoc.Prodi == "" || insertedDoc.Akun.Email == "" || insertedDoc.Akun.Password == "" {
 		return fmt.Errorf("mohon untuk melengkapi data")
 	}
 	if err := checkmail.ValidateFormat(insertedDoc.Akun.Email); err != nil {
@@ -54,6 +54,7 @@ func AddPembimbingByAdmin(db *mongo.Database, insertedDoc intermoni.Pembimbing) 
 		"akun": intermoni.User{
 			ID: objectId,
 		},
+		"prodi": insertedDoc.Prodi,
 	}
 	
 	_, err = intermoni.InsertOneDoc(db, "user", user)

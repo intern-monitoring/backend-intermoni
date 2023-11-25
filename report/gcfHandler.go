@@ -26,22 +26,12 @@ func Post(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request
 		Response.Message = "Maneh tidak memiliki akses"
 		return intermoni.GCFReturnStruct(Response)
 	}
-	id := intermoni.GetID(r)
-	if id == "" {
-		Response.Message = "Wrong parameter"
-		return intermoni.GCFReturnStruct(Response)
-	}
-	idparam, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		Response.Message = "Invalid id parameter"
-		return intermoni.GCFReturnStruct(Response)
-	}
 	err = json.NewDecoder(r.Body).Decode(&report)
 	if err != nil {
 		Response.Message = "error parsing application/json: " + err.Error()
 		return intermoni.GCFReturnStruct(Response)
 	}
-	err = TambahReportByMahasiswa(idparam, user_login.Id, conn, report)
+	err = TambahReportByMahasiswa(user_login.Id, conn, report)
 	if err != nil {
 		Response.Message = err.Error()
 		return intermoni.GCFReturnStruct(Response)

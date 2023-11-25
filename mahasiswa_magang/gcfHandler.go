@@ -151,26 +151,9 @@ func Get(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 		Response.Message = "Gagal Decode Token : " + err.Error()
 		return intermoni.GCFReturnStruct(Response)
 	}
-	path, id := GetPathAndID(r)
-	if path == "/seleksi" {
-		if id == "" {
-			return GetAllMahasiwaSeleksi(user_login, conn)
-		}
-		idparam, err := primitive.ObjectIDFromHex(id)
-		if err != nil {
-			Response.Message = "Invalid id parameter"
-			return intermoni.GCFReturnStruct(Response)
-		}
-		mahasiswa_seleksi, err := GetMahasiswaSeleksiFromID(idparam, conn)
-		if err != nil {
-			Response.Message = err.Error()
-			return intermoni.GCFReturnStruct(Response)
-		}
-		//
-		return intermoni.GCFReturnStruct(mahasiswa_seleksi)
-	}
+	id := intermoni.GetID(r)
 	if id == "" {
-		return GetAllMahasiswaMagang(user_login, conn)
+		return GetMahasiswaMagang(user_login, conn)
 	}
 	idparam, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -186,7 +169,7 @@ func Get(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 	return intermoni.GCFReturnStruct(mahasiswa_magang)
 }
 
-func GetAllMahasiswaMagang(user_login intermoni.Payload, conn *mongo.Database) string {
+func GetMahasiswaMagang(user_login intermoni.Payload, conn *mongo.Database) string {
 	Response.Status = false
 	//
 	if user_login.Role == "admin" {
@@ -216,42 +199,4 @@ func GetAllMahasiswaMagang(user_login intermoni.Payload, conn *mongo.Database) s
 	//
 	Response.Message = "Maneh tidak memiliki akses"
 	return intermoni.GCFReturnStruct(Response)
-}
-
-func GetAllMahasiwaSeleksi(user_login intermoni.Payload, conn *mongo.Database) string {
-	Response.Status = false
-	//
-	if user_login.Role == "admin" {
-		mahasiswa_seleksi, err := GetMahasiswaSeleksiByAdmin(conn)
-		if err != nil {
-			Response.Message = err.Error()
-			return intermoni.GCFReturnStruct(Response)
-		}
-		return intermoni.GCFReturnStruct(mahasiswa_seleksi)
-	}
-	if user_login.Role == "mitra" {
-		mahasiswa_seleksi, err := GetMahasiswaSeleksiByMitra(user_login.Id, conn)
-		if err != nil {
-			Response.Message = err.Error()
-			return intermoni.GCFReturnStruct(Response)
-		}
-		return intermoni.GCFReturnStruct(mahasiswa_seleksi)
-	}
-	if user_login.Role == "mahasiswa" {
-		mahasiswa_seleksi, err := GetMahasiswaSeleksiByMahasiswa(user_login.Id, conn)
-		if err != nil {
-			Response.Message = err.Error()
-			return intermoni.GCFReturnStruct(Response)
-		}
-		return intermoni.GCFReturnStruct(mahasiswa_seleksi)
-	}
-	//
-	Response.Message = "Maneh tidak memiliki akses"
-	return intermoni.GCFReturnStruct(Response)
-}
-
-func GetPathAndID(r *http.Request) (string, string) {
-    path := r.URL.Path
-    id := r.URL.Query().Get("id")
-    return path, id
 }

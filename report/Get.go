@@ -11,44 +11,61 @@ import (
 )
 
 // by mahasiswa
-func GetAllReportByMahasiswa(_id primitive.ObjectID, db *mongo.Database) (report []intermoni.Report, err error) {
+func GetAllReportByMahasiswa(_id primitive.ObjectID, db *mongo.Database) (data bson.M, err error) {
+	var report []intermoni.Report
+	var penerima bson.M
 	collection := db.Collection("report")
 	mahasiswa, err := intermoni.GetMahasiswaFromAkun(_id, db)
 	if err != nil {
-		return report, fmt.Errorf("error GetAllReportByMahasiswa get mahasiswa: %s", err)
+		return data, fmt.Errorf("error GetAllReportByMahasiswa get mahasiswa: %s", err)
 	}
 	filter := bson.M{"mahasiswa_magang.mahasiswa._id": mahasiswa.ID}
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
-		return report, fmt.Errorf("error GetAllReportByMahasiswa mongo: %s", err)
+		return data, fmt.Errorf("error GetAllReportByMahasiswa mongo: %s", err)
 	}
 	err = cursor.All(context.Background(), &report)
 	if err != nil {
-		return report, fmt.Errorf("error GetAllReportByMahasiswa context: %s", err)
+		return data, fmt.Errorf("error GetAllReportByMahasiswa context: %s", err)
 	}
 	for _, r := range report {
 		mahasiswa_magang, err := intermoni.GetMahasiswaMagangFromID(r.MahasiswaMagang.ID, db)
 		if err != nil {
-			return report, fmt.Errorf("error GetAllReportByMahasiswa get mahasiswa magang: %s", err)
+			return data, fmt.Errorf("error GetAllReportByMahasiswa get mahasiswa magang: %s", err)
 		}
 		magang, err := intermoni.GetMagangFromID(mahasiswa_magang.Magang.ID, db)
 		if err != nil {
-			return report, fmt.Errorf("error GetAllReportByMahasiswa get magang: %s", err)
+			return data, fmt.Errorf("error GetAllReportByMahasiswa get magang: %s", err)
 		}
-		mahasiswa_magang.Magang = magang
-		penerima, err := intermoni.GetUserFromID(r.Penerima.ID, db)
-		if err != nil {
-			return report, fmt.Errorf("error GetAllReportByMahasiswa get penerima: %s", err)
+		pembimbing, _ := intermoni.GetPembimbingFromID(r.Penerima.ID, db)
+		mentor, _ := intermoni.GetMentorFromID(r.Penerima.ID, db)
+		if pembimbing.ID != primitive.NilObjectID {
+			penerima = bson.M{
+				"_id": pembimbing.ID,
+				"nama": pembimbing.NamaLengkap,
+				"nik": pembimbing.NIK,
+				"prodi": pembimbing.Prodi,
+			}
+		} else if mentor.ID != primitive.NilObjectID {
+			penerima = bson.M{
+				"_id": mentor.ID,
+				"nama": mentor.NamaLengkap,
+				"nik": mentor.NIK,
+			}
+		} else {
+			penerima = bson.M{
+				"_id": primitive.NilObjectID,
+			}
 		}
-		akun := intermoni.User{
-			ID:    penerima.ID,
-			Email: penerima.Email,
-		}
-		r.Penerima = akun
 		report = append(report, r)
 		report = report[1:]
+		data = bson.M{
+			"magang": magang,
+			"report": report,
+			"penerima": penerima,
+		}
 	}
-	return report, nil
+	return data, nil
 }
 
 // by mentor/pembimbing

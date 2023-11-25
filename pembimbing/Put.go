@@ -27,6 +27,7 @@ func UpdatePembimbing(idparam, iduser primitive.ObjectID, db *mongo.Database, in
 		"akun": intermoni.User{
 			ID: pembimbing.Akun.ID,
 		},
+		"prodi": insertedDoc.Prodi,
 	}
 	err = intermoni.UpdateOneDoc(idparam, db, "pembimbing", data)
 	if err != nil {

@@ -33,8 +33,8 @@ func UpdateReportByMahasiswa(idreport, iduser primitive.ObjectID, db *mongo.Data
 	if mahasiswa_magang.Mahasiswa.ID != mahasiswa.ID {
 		return fmt.Errorf("kamu bukan pemilik report ini")
 	}
-	if mahasiswa_magang.Status != 3 {
-		return fmt.Errorf("kamu belum memiliki pembimbing/mentor")
+	if mahasiswa_magang.Status != 1 {
+		return fmt.Errorf("kamu belum lolos seleksi")
 	}
 	if pembimbing.ID != mahasiswa_magang.Pembimbing.ID && mentor.ID != mahasiswa_magang.Mentor.ID {
 		return fmt.Errorf("kamu tidak dapat memberikan report selain kepada pembimbing dan mentor kamu")
