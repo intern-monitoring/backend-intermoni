@@ -1,18 +1,18 @@
 package report
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	intermoni "github.com/intern-monitoring/backend-intermoni"
-	"github.com/intern-monitoring/backend-intermoni/mahasiswa_magang"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func TambahReportByMahasiswa(iduser primitive.ObjectID, db *mongo.Database, insertedDoc intermoni.Report) error {
-	mahasiswa_magang, err := mahasiswa_magang.GetMahasiswaMagangByMahasiswa(iduser, db)
+	mahasiswa_magang, err := GetMahasiswaMagangByMahasiswa(iduser, db)
 	if err != nil {
 		return err
 	}
@@ -41,4 +41,17 @@ func TambahReportByMahasiswa(iduser primitive.ObjectID, db *mongo.Database, inse
 		return err
 	}
 	return nil
+}
+
+func GetMahasiswaMagangByMahasiswa(iduser primitive.ObjectID, db *mongo.Database) (mahasiswa_magang intermoni.MahasiswaMagang, err error) {
+	mahasiswa, err := intermoni.GetMahasiswaFromAkun(iduser, db)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByMahasiswa get mahasiswa: %s", err)
+	}
+	filter := bson.M{"mahasiswa._id": mahasiswa.ID}
+	err = db.Collection("mahasiswa_magang").FindOne(context.TODO(), filter).Decode(&mahasiswa_magang)
+	if err != nil {
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByMahasiswa context: %s", err)
+	}
+	return mahasiswa_magang, nil
 }

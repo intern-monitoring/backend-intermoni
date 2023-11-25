@@ -65,6 +65,11 @@ func Put(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 		Response.Message = "Invalid id parameter"
 		return intermoni.GCFReturnStruct(Response)
 	}
+	err = json.NewDecoder(r.Body).Decode(&pembimbing)
+	if err != nil {
+		Response.Message = "error parsing application/json: " + err.Error()
+		return intermoni.GCFReturnStruct(Response)
+	}
 	err = UpdatePembimbing(idparam, user_login.Id, conn, pembimbing)
 	if err != nil {
 		Response.Message = err.Error()

@@ -45,26 +45,39 @@ func GetMahasiswaMagangByAdmin(db *mongo.Database) (mahasiswa_magang []intermoni
 }
 
 // by mahasiswa
-func GetMahasiswaMagangByMahasiswa(_id primitive.ObjectID, db *mongo.Database) (mahasiswa_magang intermoni.MahasiswaMagang, err error) {
+func GetMahasiswaMagangByMahasiswa(_id primitive.ObjectID, db *mongo.Database) (mahasiswa_magang []intermoni.MahasiswaMagang, err error) {
 	collection := db.Collection("mahasiswa_magang")
 	mahasiswa, err := intermoni.GetMahasiswaFromAkun(_id, db)
 	if err != nil {
 		return mahasiswa_magang, err
 	}
-	filter := bson.M{"mahasiswa._id": mahasiswa.ID, "status": 3}
-	err = collection.FindOne(context.TODO(), filter).Decode(&mahasiswa_magang)
+	filter := bson.M{"mahasiswa._id": mahasiswa.ID}
+	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
 		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByMahasiswa mongo: %s", err)
 	}
-	magang, err := intermoni.GetMagangFromID(mahasiswa_magang.Magang.ID, db)
+	err = cursor.All(context.Background(), &mahasiswa_magang)
 	if err != nil {
-		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByAdmin get magang: %s", err)
+		return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByMahasiswa context: %s", err)
 	}
-	mahasiswa_magang.Magang = magang
-	pembimbing, _ := intermoni.GetPembimbingFromID(mahasiswa_magang.Pembimbing.ID, db)
-	mahasiswa_magang.Pembimbing = pembimbing
-	mentor, _ := intermoni.GetMentorFromID(mahasiswa_magang.Mentor.ID, db)
-	mahasiswa_magang.Mentor = mentor
+	for _, m := range mahasiswa_magang {
+		mahasiswa, err := intermoni.GetMahasiswaFromID(m.Mahasiswa.ID, db)
+		if err != nil {
+			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByMahasiswa get mahasiswa: %s", err)
+		}
+		m.Mahasiswa = mahasiswa
+		magang, err := intermoni.GetMagangFromID(m.Magang.ID, db)
+		if err != nil {
+			return mahasiswa_magang, fmt.Errorf("error GetMahasiswaMagangByMahasiswa get magang: %s", err)
+		}
+		m.Magang = magang
+		pembimbing, _ := intermoni.GetPembimbingFromID(m.Pembimbing.ID, db)
+		m.Pembimbing = pembimbing
+		mentor, _ := intermoni.GetMentorFromID(m.Mentor.ID, db)
+		m.Mentor = mentor
+		mahasiswa_magang = append(mahasiswa_magang, m)
+		mahasiswa_magang = mahasiswa_magang[1:]
+	}
 	return mahasiswa_magang, nil
 }
 
