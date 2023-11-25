@@ -13,6 +13,7 @@ import (
 	"github.com/intern-monitoring/backend-intermoni/mentor"
 	"github.com/intern-monitoring/backend-intermoni/mitra"
 	"github.com/intern-monitoring/backend-intermoni/pembimbing"
+	"github.com/intern-monitoring/backend-intermoni/report"
 	"github.com/intern-monitoring/backend-intermoni/seleksi"
 	"github.com/intern-monitoring/backend-intermoni/signup_mahasiswa"
 	"go.mongodb.org/mongo-driver/bson"
@@ -227,6 +228,17 @@ func TestSeleksiBerkasMahasiswaMagangByMitra2(t *testing.T) {
 		t.Errorf("Error TestSeleksiBerkasMahasiswaMagangByMitra: %v", err)
 	} else {
 		fmt.Println("Berhasil yey!")
+	}
+}
+
+func TestGetAllReportByMahasiswa4(t *testing.T) {
+	id := "6556115b70ac8168bbdd60a5"
+	objectId, _ := primitive.ObjectIDFromHex(id)
+	hasil, err := report.GetAllReportByMahasiswa(objectId, db)
+	if err != nil {
+		t.Errorf("Error TestGetAllReportByMahasiswa: %v", err)
+	} else {
+		fmt.Println(intermoni.GCFReturnStruct(hasil))
 	}
 }
 

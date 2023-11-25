@@ -11,15 +11,15 @@ import (
 )
 
 // by mahasiswa
-func GetAllReportByMahasiswa(_id primitive.ObjectID, db *mongo.Database) (data bson.M, err error) {
+func GetAllReportByMahasiswa(_id primitive.ObjectID, db *mongo.Database) (data []bson.M, err error) {
 	var report []intermoni.Report
 	var penerima bson.M
 	collection := db.Collection("report")
-	mahasiswa, err := intermoni.GetMahasiswaFromAkun(_id, db)
+	mahasiswa_magang, err := GetMahasiswaMagangByMahasiswa(_id, db)
 	if err != nil {
 		return data, fmt.Errorf("error GetAllReportByMahasiswa get mahasiswa: %s", err)
 	}
-	filter := bson.M{"mahasiswa_magang.mahasiswa._id": mahasiswa.ID}
+	filter := bson.M{"mahasiswamagang._id": mahasiswa_magang.ID}
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
 		return data, fmt.Errorf("error GetAllReportByMahasiswa mongo: %s", err)
@@ -57,13 +57,15 @@ func GetAllReportByMahasiswa(_id primitive.ObjectID, db *mongo.Database) (data b
 				"_id": primitive.NilObjectID,
 			}
 		}
-		report = append(report, r)
-		report = report[1:]
-		data = bson.M{
+		datareport := bson.M{
 			"magang": magang,
-			"report": report,
+			"_id": r.ID,
+			"judul": r.Judul,
+			"isi": r.Isi,
 			"penerima": penerima,
+			"createdat": r.CreatedAt,
 		}
+		data = append(data, datareport)
 	}
 	return data, nil
 }
@@ -95,42 +97,62 @@ func GetAllReportByPenerima(_id primitive.ObjectID, db *mongo.Database) (report 
 			return report, fmt.Errorf("error GetAllReportByMitra get magang: %s", err)
 		}
 		mahasiswa_magang.Magang = magang
+		r.MahasiswaMagang = mahasiswa_magang
 		report = append(report, r)
 		report = report[1:]
 	}
 	return report, nil
 }
 
-func GetReportByID(_id primitive.ObjectID, db *mongo.Database) (report intermoni.Report, err error) {
+func GetReportByID(_id primitive.ObjectID, db *mongo.Database) (data bson.M, err error) {
+	var report intermoni.Report
+	var penerima bson.M
 	collection := db.Collection("report")
 	filter := bson.M{"_id": _id}
 	err = collection.FindOne(context.Background(), filter).Decode(&report)
 	if err != nil {
-		return report, fmt.Errorf("error GetReportByID: %s", err)
+		return data, fmt.Errorf("error GetReportByID: %s", err)
 	}
 	mahasiswa_magang, err := intermoni.GetMahasiswaMagangFromID(report.MahasiswaMagang.ID, db)
 	if err != nil {
-		return report, fmt.Errorf("error GetReportByID get mahasiswa magang: %s", err)
+		return data, fmt.Errorf("error GetReportByID get mahasiswa magang: %s", err)
 	}
 	mahasiswa, err := intermoni.GetMahasiswaFromID(mahasiswa_magang.Mahasiswa.ID, db)
 	if err != nil {
-		return report, fmt.Errorf("error GetReportByID get mahasiswa: %s", err)
+		return data, fmt.Errorf("error GetReportByID get mahasiswa: %s", err)
 	}
-	mahasiswa_magang.Mahasiswa = mahasiswa
 	magang, err := intermoni.GetMagangFromID(mahasiswa_magang.Magang.ID, db)
 	if err != nil {
-		return report, fmt.Errorf("error GetReportByID get magang: %s", err)
+		return data, fmt.Errorf("error GetReportByID get magang: %s", err)
 	}
-	mahasiswa_magang.Magang = magang
-	penerima, err := intermoni.GetUserFromID(report.Penerima.ID, db)
-	if err != nil {
-		return report, fmt.Errorf("error GetReportByID get penerima: %s", err)
+	pembimbing, _ := intermoni.GetPembimbingFromID(report.Penerima.ID, db)
+	mentor, _ := intermoni.GetMentorFromID(report.Penerima.ID, db)
+	if pembimbing.ID != primitive.NilObjectID {
+		penerima = bson.M{
+			"_id": pembimbing.ID,
+			"nama": pembimbing.NamaLengkap,
+			"nik": pembimbing.NIK,
+			"prodi": pembimbing.Prodi,
+		}
+	} else if mentor.ID != primitive.NilObjectID {
+		penerima = bson.M{
+			"_id": mentor.ID,
+			"nama": mentor.NamaLengkap,
+			"nik": mentor.NIK,
+		}
+	} else {
+		penerima = bson.M{
+			"_id": primitive.NilObjectID,
+		}
 	}
-	akun := intermoni.User{
-		ID:    penerima.ID,
-		Email: penerima.Email,
+	data = bson.M{
+		"mahasiswa": mahasiswa,
+		"magang": magang,
+		"_id": report.ID,
+		"judul": report.Judul,
+		"isi": report.Isi,
+		"penerima": penerima,
+		"createdat": report.CreatedAt,
 	}
-	report.Penerima = akun
-	report.MahasiswaMagang = mahasiswa_magang
-	return report, nil
+	return data, nil
 }
