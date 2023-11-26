@@ -72,8 +72,18 @@ func GetAllReportByMahasiswa(_id primitive.ObjectID, db *mongo.Database) (data [
 
 // by mentor/pembimbing
 func GetAllReportByPenerima(_id primitive.ObjectID, db *mongo.Database) (report []intermoni.Report, err error) {
+	var penerimaid primitive.ObjectID
+	pembimbing, _ := intermoni.GetPembimbingFromAkun(_id, db)
+	mentor, _ := intermoni.GetMentorFromAkun(_id, db)
+	if pembimbing.ID != primitive.NilObjectID {
+		penerimaid = pembimbing.ID
+	} else if mentor.ID != primitive.NilObjectID {
+		penerimaid = mentor.ID
+	} else {
+		penerimaid = primitive.NilObjectID
+	}
 	collection := db.Collection("report")
-	filter := bson.M{"penerima._id": _id}
+	filter := bson.M{"penerima._id": penerimaid}
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
 		return report, fmt.Errorf("error GetAllReportByMitra mongo: %s", err)
