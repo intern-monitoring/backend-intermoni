@@ -10,27 +10,28 @@ import (
 
 var (
 	Credential intermoni.Credential
+	Response intermoni.Response
 	user intermoni.User
 )
 
 func Post(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request) string {
 	conn := intermoni.MongoConnect(MONGOCONNSTRINGENV, dbname)
-	Credential.Status = false
+	Response.Status = false
 	//
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
-		Credential.Message = "error parsing application/json: " + err.Error()
-		return intermoni.GCFReturnStruct(Credential)
+		Response.Message = "error parsing application/json: " + err.Error()
+		return intermoni.GCFReturnStruct(Response)
 	}
 	user, err := LogIn(conn, user)
 	if err != nil {
-		Credential.Message = err.Error()
-		return intermoni.GCFReturnStruct(Credential)
+		Response.Message = err.Error()
+		return intermoni.GCFReturnStruct(Response)
 	}
 	tokenstring, err := intermoni.Encode(user.ID, user.Role, os.Getenv(PASETOPRIVATEKEYENV))
 	if err != nil {
-		Credential.Message = "Gagal Encode Token : " + err.Error()
-		return intermoni.GCFReturnStruct(Credential)
+		Response.Message = "Gagal Encode Token : " + err.Error()
+		return intermoni.GCFReturnStruct(Response)
 	}
 	//
 	Credential.Message = "Selamat Datang " + user.Email
