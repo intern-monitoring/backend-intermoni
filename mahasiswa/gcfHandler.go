@@ -1,7 +1,6 @@
 package mahasiswa
 
 import (
-	"encoding/json"
 	"net/http"
 
 	intermoni "github.com/intern-monitoring/backend-intermoni"
@@ -28,18 +27,13 @@ func Put(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 		Response.Message = "Invalid id parameter"
 		return intermoni.GCFReturnStruct(Response)
 	}
-	err = json.NewDecoder(r.Body).Decode(&mahasiswa)
-	if err != nil {
-		Response.Message = "error parsing application/json: " + err.Error()
-		return intermoni.GCFReturnStruct(Response)
-	}
 	user_login, err := intermoni.GetUserLogin(PASETOPUBLICKEYENV, r)
 	if err != nil {
 		Response.Message = "Gagal Decode Token : " + err.Error()
 		return intermoni.GCFReturnStruct(Response)
 	}
 	if user_login.Role == "mahasiswa" {
-		return GCFHandlerUpdateByMahasiswa(idparam, user_login.Id, mahasiswa, conn, r)
+		return GCFHandlerUpdateByMahasiswa(idparam, user_login.Id, conn, r)
 	}
 	if user_login.Role == "admin" {
 		return GCFHandlerUpdateByAdmin(idparam, mahasiswa, conn, r)
@@ -49,10 +43,10 @@ func Put(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 	return intermoni.GCFReturnStruct(Response)
 }
 
-func GCFHandlerUpdateByMahasiswa(idparam, iduser primitive.ObjectID,  mahasiswa intermoni.Mahasiswa, conn *mongo.Database, r *http.Request) string {
+func GCFHandlerUpdateByMahasiswa(idparam, iduser primitive.ObjectID, conn *mongo.Database, r *http.Request) string {
 	Response.Status = false
 	//
-	err := UpdateMahasiswa(idparam, iduser, conn, mahasiswa)
+	err := UpdateMahasiswa(idparam, iduser, conn, r)
 	if err != nil {
 		Response.Message = err.Error()
 		return intermoni.GCFReturnStruct(Response)

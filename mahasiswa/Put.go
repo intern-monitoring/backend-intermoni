@@ -5,6 +5,9 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"io"
+	"mime"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -23,7 +26,7 @@ const (
 )
 
 // by mahasiswa
-func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, insertedDoc intermoni.Mahasiswa) error {
+func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *http.Request) error {
 	mahasiswa, err := intermoni.GetMahasiswaFromAkun(iduser, db)
 	if err != nil {
 		return err
@@ -34,34 +37,52 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, ins
 	if mahasiswa.ID != idparam {
 		return fmt.Errorf("kamu bukan pemilik data ini")
 	}
-	if insertedDoc.NamaLengkap == "" || insertedDoc.TanggalLahir == "" || insertedDoc.JenisKelamin == "" || insertedDoc.NIM == "" || insertedDoc.PerguruanTinggi == "" || insertedDoc.Prodi == "" || insertedDoc.Image == nil  {
+
+	namalengkap := r.FormValue("namalengkap")
+	tanggallahir := r.FormValue("tanggallahir")
+	jeniskelamin := r.FormValue("jeniskelamin")
+	nim := r.FormValue("nim")
+	perguruantinggi := r.FormValue("perguruantinggi")
+	prodi := r.FormValue("prodi")
+
+	if namalengkap == "" || tanggallahir == "" || jeniskelamin == "" || nim == "" || perguruantinggi == "" || prodi == "" {
 		return fmt.Errorf("mohon untuk melengkapi data")
 	}
 
-	// Access the FormData from the JSON
-	imageData := insertedDoc.Image
-
-	// Detect the content type of the image
-	contentType := http.DetectContentType(imageData)
-
-	// Determine the file extension based on content type
-	fileExt, err := extFromContentType(contentType)
+	file, fileHeader, err := r.FormFile("image")
 	if err != nil {
-		return err
+		return fmt.Errorf("error 1: %s", err)
+	}
+	defer file.Close()
+
+	// Read the image data
+	var buf bytes.Buffer
+	_, err = io.Copy(&buf, file)
+	if err != nil {
+		return fmt.Errorf("error 2: %s", err)
 	}
 
-	// Create a new file in the server's storage
-	imageFileName := "uploaded_image" + fileExt
+	// Determine the file extension based on the actual image type
+	ext := getFileExtension(fileHeader)
+	if ext == "" {
+		return fmt.Errorf("error 3: %s", err)
+	}
+
+	// Encode the image data as base64
+	encodedData := base64.StdEncoding.EncodeToString(buf.Bytes())
+
+	// Create a new file in the server's storage with a dynamic file extension
+	imageFileName := fmt.Sprintf("uploaded_image%s", ext)
 	dst, err := os.Create(filepath.Join(uploadsDirPath, imageFileName))
 	if err != nil {
-		return err
+		return fmt.Errorf("error 4: %s", err)
 	}
 	defer dst.Close()
 
 	// Write the base64-encoded image data to the destination file
-	_, err = dst.Write(imageData)
+	_, err = dst.WriteString(encodedData)
 	if err != nil {
-		return err
+		return fmt.Errorf("error 5: %s", err)
 	}
 
 	// Upload the image to GitHub using GitHub API
@@ -69,30 +90,31 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, ins
 	reqBody := fmt.Sprintf(`{
 		"message": "Upload image",
 		"content": "%s"
-	}`, base64.StdEncoding.EncodeToString(imageData))
+	}`, encodedData)
 
 	client := &http.Client{}
 	req, err := http.NewRequest(http.MethodPut, uploadURL, bytes.NewBuffer([]byte(reqBody)))
 	if err != nil {
-		return err
+		return fmt.Errorf("error 6: %s", err)
 	}
 	req.Header.Set("Authorization", "token "+accessToken)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("error 7: %s", err)
 	}
 	defer resp.Body.Close()
+
 	imageUrl := "https://raw.githubusercontent.com/" + githubUser + "/" + repoName + "/master/" + imageFileName
 	mhs := bson.M{
-		"namalengkap":     insertedDoc.NamaLengkap,
-		"tanggallahir":    insertedDoc.TanggalLahir,
-		"jeniskelamin":    insertedDoc.JenisKelamin,
-		"nim":             insertedDoc.NIM,
-		"perguruantinggi": insertedDoc.PerguruanTinggi,
-		"prodi":           insertedDoc.Prodi,
+		"namalengkap":     namalengkap,
+		"tanggallahir":    tanggallahir,
+		"jeniskelamin":    jeniskelamin,
+		"nim":             nim,
+		"perguruantinggi": perguruantinggi,
+		"prodi":           prodi,
 		"seleksikampus":   0,
-		"imageurl":        imageUrl,
+		"imagename":       imageUrl,
 		"akun": intermoni.User{
 			ID: mahasiswa.Akun.ID,
 		},
@@ -104,19 +126,13 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, ins
 	return nil
 }
 
-// extFromContentType returns the file extension based on the given content type.
-func extFromContentType(contentType string) (string, error) {
-	switch contentType {
-	case "image/jpeg":
-		return ".jpg", nil
-	case "image/png":
-		return ".png", nil
-	case "image/gif":
-		return ".gif", nil
-	// Add more cases for other image types as needed
-	default:
-		return "", fmt.Errorf("unsupported content type: %s", contentType)
+// getFileExtension returns the file extension based on the MIME type.
+func getFileExtension(fileHeader *multipart.FileHeader) string {
+	extension, err := mime.ExtensionsByType(fileHeader.Header.Get("Content-Type"))
+	if err != nil || len(extension) == 0 {
+		return ""
 	}
+	return extension[0]
 }
 
 // by admin

@@ -30,7 +30,6 @@ type Mahasiswa struct {
 	PerguruanTinggi		string				`bson:"perguruantinggi,omitempty" json:"perguruantinggi,omitempty"`
 	Prodi				string				`bson:"prodi,omitempty" json:"prodi,omitempty"`
 	SeleksiKampus		int					`bson:"seleksikampus,omitempty" json:"seleksikampus,omitempty"`
-	Image 				[]byte 				`bson:"image,omitempty" json:"image,omitempty"`
 	ImageName 			string				`bson:"imagename,omitempty" json:"imagename,omitempty"`
 	Akun				User				`bson:"akun,omitempty" json:"akun,omitempty"`
 }
