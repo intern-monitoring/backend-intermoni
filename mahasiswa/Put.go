@@ -21,7 +21,7 @@ import (
 const (
 	githubUser     = "Fatwaff"
 	repoName       = "bk-image"
-	accessToken    = "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"
+	accessToken    = "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"
 	uploadsDirPath = "uploads"
 )
 
