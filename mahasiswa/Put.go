@@ -60,7 +60,7 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 
 	// Initialize GitHub client
 	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: "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"},
+		&oauth2.Token{AccessToken: "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"},
 	)
 	tc := oauth2.NewClient(r.Context(), ts)
 	client := github.NewClient(tc)
@@ -71,7 +71,7 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 	_, _, err = client.Repositories.CreateFile(r.Context(), repoOwner, repoName, "path/to/"+handler.Filename, &github.RepositoryContentFileOptions{
 		Message:   github.String("Add new file"),
 		Content:   fileContent,
-		// Committer: &github.CommitAuthor{Name: github.String("fullName"), Email: github.String("your_email@example.com")},
+		Committer: &github.CommitAuthor{Name: github.String("Fatwaff"), Email: github.String("fax.mp4@gmail.com")},
 	})
 	if err != nil {
 		return fmt.Errorf("error 3: %s", err)
