@@ -59,7 +59,7 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 		return fmt.Errorf("error 2: %s", err)
 	}
 
-	access_token := os.Getenv("GITHUB_ACCESS_TOKEN")
+	access_token := os.Getenv("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")
 	if access_token == "" {
 		return fmt.Errorf("error access token: %s", err)
 	}
