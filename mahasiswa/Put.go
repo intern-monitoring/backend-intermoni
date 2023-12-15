@@ -19,7 +19,7 @@ import (
 const (
 	githubUser     = "Fatwaff"
 	repoName       = "bk-image"
-	accessToken    = "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"
+	accessToken    = "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"
 	uploadsDirPath = "uploads"
 )
 
