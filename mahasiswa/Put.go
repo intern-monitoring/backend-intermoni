@@ -1,14 +1,13 @@
 package mahasiswa
 
 import (
-	"bytes"
 	"context"
-	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
+
+	"github.com/google/go-github/v56/github"
+	"golang.org/x/oauth2"
 
 	intermoni "github.com/intern-monitoring/backend-intermoni"
 	"go.mongodb.org/mongo-driver/bson"
@@ -16,12 +15,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-const (
-	githubUser     = "Fatwaff"
-	repoName       = "bk-image"
-	accessToken    = "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"
-	uploadsDirPath = "user"
-)
+// const (
+// 	githubUser     = "Fatwaff"
+// 	repoName       = "bk-image"
+// 	accessToken    = "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"
+// 	uploadsDirPath = "user"
+// )
 
 // by mahasiswa
 func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *http.Request) error {
@@ -47,63 +46,38 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 		return fmt.Errorf("mohon untuk melengkapi data")
 	}
 
-	file, fileHeader, err := r.FormFile("image")
+	file, handler, err := r.FormFile("file")
 	if err != nil {
 		return fmt.Errorf("error 1: %s", err)
 	}
 	defer file.Close()
 
-	// Read the image data
-	var buf bytes.Buffer
-	_, err = io.Copy(&buf, file)
+	// Read the content of the file into a byte slice
+	fileContent, err := io.ReadAll(file)
 	if err != nil {
 		return fmt.Errorf("error 2: %s", err)
 	}
 
-	// Determine the file extension based on the actual image type
-	ext := filepath.Ext(fileHeader.Filename)
+	// Initialize GitHub client
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: "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"},
+	)
+	tc := oauth2.NewClient(r.Context(), ts)
+	client := github.NewClient(tc)
 
-	// Create the "uploads" directory if it doesn't exist
-	if err := os.MkdirAll("user", os.ModePerm); err != nil {
+	// Create a new repository file
+	repoOwner := "Fatwaff"
+	repoName := "bk-image"
+	_, _, err = client.Repositories.CreateFile(r.Context(), repoOwner, repoName, "path/to/"+handler.Filename, &github.RepositoryContentFileOptions{
+		Message:   github.String("Add new file"),
+		Content:   fileContent,
+		// Committer: &github.CommitAuthor{Name: github.String("fullName"), Email: github.String("your_email@example.com")},
+	})
+	if err != nil {
 		return fmt.Errorf("error 3: %s", err)
 	}
 
-	// Create a new file in the server's storage with a dynamic file extension
-	imageFileName := fmt.Sprintf("uploaded_image%s", ext)
-	dst, err := os.Create(filepath.Join(uploadsDirPath, imageFileName))
-	if err != nil {
-		return fmt.Errorf("error 4: %s", err)
-	}
-	defer dst.Close()
-
-	// Write the base64-encoded image data to the destination file
-	_, err = dst.Write(buf.Bytes())
-	if err != nil {
-		return fmt.Errorf("error 5: %s", err)
-	}
-
-	// Upload the image to GitHub using GitHub API
-	uploadURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/%s", githubUser, repoName, imageFileName)
-	encodedData := base64.StdEncoding.EncodeToString(buf.Bytes())
-	reqBody := fmt.Sprintf(`{
-		"message": "Upload image",
-		"content": "%s"
-	}`, encodedData)
-
-	client := &http.Client{}
-	req, err := http.NewRequest(http.MethodPut, uploadURL, bytes.NewBuffer([]byte(reqBody)))
-	if err != nil {
-		return fmt.Errorf("error 6: %s", err)
-	}
-	req.Header.Set("Authorization", "token "+accessToken)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("error 7: %s", err)
-	}
-	defer resp.Body.Close()
-
-	imageUrl := "https://raw.githubusercontent.com/" + githubUser + "/" + repoName + "/master/" + imageFileName
+	// imageUrl := "https://raw.githubusercontent.com/" + githubUser + "/" + repoName + "/master/" + imageFileName
 	mhs := bson.M{
 		"namalengkap":     namalengkap,
 		"tanggallahir":    tanggallahir,
@@ -112,7 +86,7 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 		"perguruantinggi": perguruantinggi,
 		"prodi":           prodi,
 		"seleksikampus":   0,
-		"imagename":       imageUrl,
+		"imagename":       "imageUrl",
 		"akun": intermoni.User{
 			ID: mahasiswa.Akun.ID,
 		},
