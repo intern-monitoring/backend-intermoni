@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	"github.com/google/go-github/v56/github"
 	"golang.org/x/oauth2"
@@ -58,9 +59,14 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 		return fmt.Errorf("error 2: %s", err)
 	}
 
+	access_token := os.Getenv("GITHUB_ACCESS_TOKEN")
+	if access_token == "" {
+		return fmt.Errorf("error access token: %s", err)
+	}
+
 	// Initialize GitHub client
 	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: "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"},
+		&oauth2.Token{AccessToken: access_token},
 	)
 	tc := oauth2.NewClient(r.Context(), ts)
 	client := github.NewClient(tc)
