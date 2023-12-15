@@ -6,8 +6,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"mime"
-	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -63,13 +61,12 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 	}
 
 	// Determine the file extension based on the actual image type
-	ext := getFileExtension(fileHeader)
-	if ext == "" {
+	ext := filepath.Ext(fileHeader.Filename)
+
+	// Create the "uploads" directory if it doesn't exist
+	if err := os.MkdirAll("uploads", os.ModePerm); err != nil {
 		return fmt.Errorf("error 3: %s", err)
 	}
-
-	// Encode the image data as base64
-	encodedData := base64.StdEncoding.EncodeToString(buf.Bytes())
 
 	// Create a new file in the server's storage with a dynamic file extension
 	imageFileName := fmt.Sprintf("uploaded_image%s", ext)
@@ -80,13 +77,14 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 	defer dst.Close()
 
 	// Write the base64-encoded image data to the destination file
-	_, err = dst.WriteString(encodedData)
+	_, err = dst.Write(buf.Bytes())
 	if err != nil {
 		return fmt.Errorf("error 5: %s", err)
 	}
 
 	// Upload the image to GitHub using GitHub API
 	uploadURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/%s", githubUser, repoName, imageFileName)
+	encodedData := base64.StdEncoding.EncodeToString(buf.Bytes())
 	reqBody := fmt.Sprintf(`{
 		"message": "Upload image",
 		"content": "%s"
@@ -124,15 +122,6 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 		return err
 	}
 	return nil
-}
-
-// getFileExtension returns the file extension based on the MIME type.
-func getFileExtension(fileHeader *multipart.FileHeader) string {
-	extension, err := mime.ExtensionsByType(fileHeader.Header.Get("Content-Type"))
-	if err != nil || len(extension) == 0 {
-		return ""
-	}
-	return extension[0]
 }
 
 // by admin
