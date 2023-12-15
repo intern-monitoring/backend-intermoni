@@ -20,7 +20,7 @@ const (
 	githubUser     = "Fatwaff"
 	repoName       = "bk-image"
 	accessToken    = "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"
-	uploadsDirPath = "uploads"
+	uploadsDirPath = "user"
 )
 
 // by mahasiswa
@@ -64,7 +64,7 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 	ext := filepath.Ext(fileHeader.Filename)
 
 	// Create the "uploads" directory if it doesn't exist
-	if err := os.MkdirAll("uploads", os.ModePerm); err != nil {
+	if err := os.MkdirAll("user", os.ModePerm); err != nil {
 		return fmt.Errorf("error 3: %s", err)
 	}
 
