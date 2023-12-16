@@ -61,21 +61,21 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 		return fmt.Errorf("error 2: %s", err)
 	}
 
-	// Create a new file with the random filename
-	newFile, err := os.Create(filepath.Join("uploads", randomFileName))
-	if err != nil {
-		return fmt.Errorf("error 3: %s", err)
-	}
-	defer newFile.Close()
+	// // Create a new file with the random filename
+	// newFile, err := os.Create(filepath.Join("uploads", randomFileName))
+	// if err != nil {
+	// 	return fmt.Errorf("error 3: %s", err)
+	// }
+	// defer newFile.Close()
 
-	// Copy the content of the uploaded file to the new file
-	_, err = io.Copy(newFile, file)
-	if err != nil {
-		return fmt.Errorf("error 4: %s", err)
-	}
+	// // Copy the content of the uploaded file to the new file
+	// _, err = io.Copy(newFile, file)
+	// if err != nil {
+	// 	return fmt.Errorf("error 4: %s", err)
+	// }
 
 	// Read the content of the file into a byte slice
-	fileContent, err := os.ReadFile(newFile.Name())
+	fileContent, err := io.ReadAll(file)
 	if err != nil {
 		return fmt.Errorf("error 5: %s", err)
 	}
