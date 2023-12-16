@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	"github.com/google/go-github/v56/github"
 	"golang.org/x/oauth2"
@@ -58,7 +59,7 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 		return fmt.Errorf("error 2: %s", err)
 	}
 
-	access_token := r.FormValue("ghp")
+	access_token := os.Getenv("GITHUB_ACCESS_TOKEN")
 	if access_token == "" {
 		return fmt.Errorf("error access token: %s", err)
 	}
