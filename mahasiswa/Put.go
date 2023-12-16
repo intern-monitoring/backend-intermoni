@@ -3,11 +3,11 @@ package mahasiswa
 import (
 	"context"
 	"crypto/rand"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/google/go-github/v56/github"
 	"golang.org/x/oauth2"
@@ -49,20 +49,20 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 		return fmt.Errorf("mohon untuk melengkapi data")
 	}
 
-	file, _, err := r.FormFile("file")
+	file, handler, err := r.FormFile("file")
 	if err != nil {
 		return fmt.Errorf("error 1: %s", err)
 	}
 	defer file.Close()
 
 	// Generate a random filename
-	randomFileName, err := generateRandomFileName()
+	randomFileName, err := generateRandomFileName(handler.Filename)
 	if err != nil {
 		return fmt.Errorf("error 2: %s", err)
 	}
 
 	// Create a new file with the random filename
-	newFile, err := os.Create("user/" + randomFileName)
+	newFile, err := os.Create(filepath.Join("uploads", randomFileName))
 	if err != nil {
 		return fmt.Errorf("error 3: %s", err)
 	}
@@ -125,13 +125,15 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 	return nil
 }
 
-func generateRandomFileName() (string, error) {
+func generateRandomFileName(originalFilename string) (string, error) {
 	randomBytes := make([]byte, 16)
 	_, err := rand.Read(randomBytes)
 	if err != nil {
 		return "", err
 	}
-	return hex.EncodeToString(randomBytes), nil
+
+	randomFileName := fmt.Sprintf("%x%s", randomBytes, filepath.Ext(originalFilename))
+	return randomFileName, nil
 }
 
 // by admin
