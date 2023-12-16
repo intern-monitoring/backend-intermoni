@@ -2,6 +2,8 @@ package mahasiswa
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
@@ -47,16 +49,35 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 		return fmt.Errorf("mohon untuk melengkapi data")
 	}
 
-	file, handler, err := r.FormFile("file")
+	file, _, err := r.FormFile("file")
 	if err != nil {
 		return fmt.Errorf("error 1: %s", err)
 	}
 	defer file.Close()
 
-	// Read the content of the file into a byte slice
-	fileContent, err := io.ReadAll(file)
+	// Generate a random filename
+	randomFileName, err := generateRandomFileName()
 	if err != nil {
 		return fmt.Errorf("error 2: %s", err)
+	}
+
+	// Create a new file with the random filename
+	newFile, err := os.Create("user/" + randomFileName)
+	if err != nil {
+		return fmt.Errorf("error 3: %s", err)
+	}
+	defer newFile.Close()
+
+	// Copy the content of the uploaded file to the new file
+	_, err = io.Copy(newFile, file)
+	if err != nil {
+		return fmt.Errorf("error 4: %s", err)
+	}
+
+	// Read the content of the file into a byte slice
+	fileContent, err := os.ReadFile(newFile.Name())
+	if err != nil {
+		return fmt.Errorf("error 5: %s", err)
 	}
 
 	access_token := os.Getenv("GITHUB_ACCESS_TOKEN")
@@ -74,16 +95,16 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 	// Create a new repository file
 	repoOwner := "Fatwaff"
 	repoName := "bk-image"
-	_, _, err = client.Repositories.CreateFile(r.Context(), repoOwner, repoName, "path/to/"+handler.Filename, &github.RepositoryContentFileOptions{
+	_, _, err = client.Repositories.CreateFile(r.Context(), repoOwner, repoName, "user/"+randomFileName, &github.RepositoryContentFileOptions{
 		Message:   github.String("Add new file"),
 		Content:   fileContent,
 		Committer: &github.CommitAuthor{Name: github.String("Fatwaff"), Email: github.String("fax.mp4@gmail.com")},
 	})
 	if err != nil {
-		return fmt.Errorf("error 3: %s", err)
+		return fmt.Errorf("error 6: %s", err)
 	}
 
-	// imageUrl := "https://raw.githubusercontent.com/" + githubUser + "/" + repoName + "/master/" + imageFileName
+	imageUrl := "https://raw.githubusercontent.com/" + repoOwner + "/" + repoName + "/main/user/" + randomFileName
 	mhs := bson.M{
 		"namalengkap":     namalengkap,
 		"tanggallahir":    tanggallahir,
@@ -92,7 +113,7 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 		"perguruantinggi": perguruantinggi,
 		"prodi":           prodi,
 		"seleksikampus":   0,
-		"imagename":       "imageUrl",
+		"imagename":       imageUrl,
 		"akun": intermoni.User{
 			ID: mahasiswa.Akun.ID,
 		},
@@ -102,6 +123,15 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 		return err
 	}
 	return nil
+}
+
+func generateRandomFileName() (string, error) {
+	randomBytes := make([]byte, 16)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(randomBytes), nil
 }
 
 // by admin
