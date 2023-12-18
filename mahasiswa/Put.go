@@ -11,6 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+var imageUrl string
+
 // by mahasiswa
 func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *http.Request) error {
 	mahasiswa, err := intermoni.GetMahasiswaFromAkun(iduser, db)
@@ -30,14 +32,19 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 	nim := r.FormValue("nim")
 	perguruantinggi := r.FormValue("perguruantinggi")
 	prodi := r.FormValue("prodi")
+	img := r.FormValue("file")
 
 	if namalengkap == "" || tanggallahir == "" || jeniskelamin == "" || nim == "" || perguruantinggi == "" || prodi == "" {
 		return fmt.Errorf("mohon untuk melengkapi data")
 	}
 
-	imageUrl, err := intermoni.SaveFileToGithub("Fatwaff", "fax.mp4@gmail.com", "bk-image", "user" ,r)
-	if err != nil {
-		return fmt.Errorf("error save file: %s", err)
+	if img != "" {
+		imageUrl = img
+	} else {
+		imageUrl, err = intermoni.SaveFileToGithub("Fatwaff", "fax.mp4@gmail.com", "bk-image", "user" ,r)
+		if err != nil {
+			return fmt.Errorf("error save file: %s", err)
+		}
 	}
 	
 	mhs := bson.M{
