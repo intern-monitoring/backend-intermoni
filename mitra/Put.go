@@ -3,6 +3,7 @@ package mitra
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	intermoni "github.com/intern-monitoring/backend-intermoni"
 	"github.com/intern-monitoring/backend-intermoni/mahasiswa_magang"
@@ -12,7 +13,7 @@ import (
 )
 
 // by mitra
-func UpdateMitra(idparam, iduser primitive.ObjectID, db *mongo.Database, insertedDoc intermoni.Mitra) error {
+func UpdateMitra(idparam, iduser primitive.ObjectID, db *mongo.Database, r *http.Request) error {
 	mitra, err := intermoni.GetMitraFromAkun(iduser, db)
 	if err != nil {
 		return err
@@ -23,19 +24,36 @@ func UpdateMitra(idparam, iduser primitive.ObjectID, db *mongo.Database, inserte
 	if mitra.ID != idparam {
 		return fmt.Errorf("kamu bukan pemilik data ini")
 	}
-	if insertedDoc.NamaNarahubung == "" || insertedDoc.NoHpNarahubung == "" || insertedDoc.Nama == "" || insertedDoc.Kategori == "" || insertedDoc.SektorIndustri == "" || insertedDoc.Alamat == "" || insertedDoc.Website == "" {
+
+	namanarahubung := r.FormValue("namanarahubung")
+	nohpnarahubung := r.FormValue("nohpnarahubung")
+	nama := r.FormValue("nama")
+	kategori := r.FormValue("kategori")
+	sektorindustri := r.FormValue("sektorindustri")
+	tentang := r.FormValue("tentang")
+	alamat := r.FormValue("alamat")
+	website := r.FormValue("website")
+
+	if namanarahubung == "" || nohpnarahubung == "" || nama == "" || kategori == "" || sektorindustri == "" || alamat == "" || website == "" {
 		return fmt.Errorf("mohon untuk melengkapi data")
 	}
+
+	imageUrl, err := intermoni.SaveFileToGithub("Fatwaff", "fax.mp4@gmail.com", "bk-image", "user" ,r)
+	if err != nil {
+		return fmt.Errorf("error save file: %s", err)
+	}
+
 	mtr := bson.M{
-		"namanarahubung": insertedDoc.NamaNarahubung,
-		"nohpnarahubung": insertedDoc.NoHpNarahubung,
-		"nama":           insertedDoc.Nama,
-		"kategori":       insertedDoc.Kategori,
-		"sektorindustri": insertedDoc.SektorIndustri,
-		"tentang":        insertedDoc.Tentang,
-		"alamat":         insertedDoc.Alamat,
-		"website":        insertedDoc.Website,
+		"namanarahubung": namanarahubung,
+		"nohpnarahubung": nohpnarahubung,
+		"nama":           nama,
+		"kategori":       kategori,
+		"sektorindustri": sektorindustri,
+		"tentang":        tentang,
+		"alamat":         alamat,
+		"website":        website,
 		"mou":            0,
+		"imageurl":       imageUrl,
 		"akun": intermoni.User{
 			ID: mitra.Akun.ID,
 		},

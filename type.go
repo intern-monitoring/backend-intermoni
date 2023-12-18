@@ -30,7 +30,7 @@ type Mahasiswa struct {
 	PerguruanTinggi		string				`bson:"perguruantinggi,omitempty" json:"perguruantinggi,omitempty"`
 	Prodi				string				`bson:"prodi,omitempty" json:"prodi,omitempty"`
 	SeleksiKampus		int					`bson:"seleksikampus,omitempty" json:"seleksikampus,omitempty"`
-	ImageName 			string				`bson:"imagename,omitempty" json:"imagename,omitempty"`
+	ImageUrl 			string				`bson:"imageurl,omitempty" json:"imageurl,omitempty"`
 	Akun				User				`bson:"akun,omitempty" json:"akun,omitempty"`
 }
 
@@ -45,6 +45,7 @@ type Mitra struct {
 	Alamat				string				`bson:"alamat,omitempty" json:"alamat,omitempty"`
 	Website				string				`bson:"website,omitempty" json:"website,omitempty"`
 	MoU					int					`bson:"mou,omitempty" json:"mou,omitempty"`
+	ImageUrl 			string				`bson:"imageurl,omitempty" json:"imageurl,omitempty"`
 	Akun				User				`bson:"akun,omitempty" json:"akun,omitempty"`
 }
 
@@ -75,6 +76,7 @@ type Pembimbing struct {
 	NamaLengkap			string				`bson:"namalengkap,omitempty" json:"namalengkap,omitempty"`
 	NIK					string				`bson:"nik,omitempty" json:"nik,omitempty"`
 	Prodi				string				`bson:"prodi,omitempty" json:"prodi,omitempty"`
+	ImageUrl 			string				`bson:"imageurl,omitempty" json:"imageurl,omitempty"`
 	Akun				User				`bson:"akun,omitempty" json:"akun,omitempty"`
 }
 
@@ -83,6 +85,7 @@ type Mentor struct {
 	NamaLengkap			string				`bson:"namalengkap,omitempty" json:"namalengkap,omitempty"`
 	NIK					string				`bson:"nik,omitempty" json:"nik,omitempty"`
 	Mitra				Mitra				`bson:"mitra,omitempty" json:"mitra,omitempty"`
+	ImageUrl 			string				`bson:"imageurl,omitempty" json:"imageurl,omitempty"`
 	Akun				User				`bson:"akun,omitempty" json:"akun,omitempty"`
 }
 

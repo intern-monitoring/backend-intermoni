@@ -40,12 +40,7 @@ func Put(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 		Response.Message = "Invalid id parameter"
 		return intermoni.GCFReturnStruct(Response)
 	}
-	err = json.NewDecoder(r.Body).Decode(&mitra)
-	if err != nil {
-		Response.Message = "error parsing application/json: " + err.Error()
-		return intermoni.GCFReturnStruct(Response)
-	}
-	err = UpdateMitra(idparam, user_login.Id, conn, mitra)
+	err = UpdateMitra(idparam, user_login.Id, conn, r)
 	if err != nil {
 		Response.Message = err.Error()
 		return intermoni.GCFReturnStruct(Response)

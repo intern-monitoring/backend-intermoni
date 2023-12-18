@@ -3,6 +3,7 @@ package mentor
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	intermoni "github.com/intern-monitoring/backend-intermoni"
 	"go.mongodb.org/mongo-driver/bson"
@@ -10,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func UpdateMentor(idparam, iduser primitive.ObjectID, db *mongo.Database, insertedDoc intermoni.Mentor) error {
+func UpdateMentor(idparam, iduser primitive.ObjectID, db *mongo.Database, r *http.Request) error {
 	mentor, err := intermoni.GetMentorFromAkun(iduser, db)
 	if err != nil {
 		return err
@@ -21,15 +22,25 @@ func UpdateMentor(idparam, iduser primitive.ObjectID, db *mongo.Database, insert
 	if mentor.ID != idparam {
 		return fmt.Errorf("kamu bukan pemilik data ini")
 	}
-	if insertedDoc.NamaLengkap == "" || insertedDoc.NIK == "" {
+	namalengkap := r.FormValue("namalengkap")
+	nik := r.FormValue("nik")
+
+	if namalengkap == "" || nik == "" {
 		return fmt.Errorf("mohon untuk melengkapi data")
 	}
+	
+	imageUrl, err := intermoni.SaveFileToGithub("Fatwaff", "fax.mp4@gmail.com", "bk-image", "user" ,r)
+	if err != nil {
+		return fmt.Errorf("error save file: %s", err)
+	}
+
 	data := bson.M{
-		"namalengkap": insertedDoc.NamaLengkap,
-		"nik":         insertedDoc.NIK,
+		"namalengkap": namalengkap,
+		"nik":         nik,
 		"mitra": bson.M{
 			"_id": mentor.Mitra.ID,
 		},
+		"imageurl": imageUrl,
 		"akun": intermoni.User{
 			ID: mentor.Akun.ID,
 		},

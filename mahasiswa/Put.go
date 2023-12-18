@@ -2,28 +2,14 @@ package mahasiswa
 
 import (
 	"context"
-	"crypto/rand"
 	"fmt"
-	"io"
 	"net/http"
-	"os"
-	"path/filepath"
-
-	"github.com/google/go-github/v56/github"
-	"golang.org/x/oauth2"
 
 	intermoni "github.com/intern-monitoring/backend-intermoni"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
-// const (
-// 	githubUser     = "Fatwaff"
-// 	repoName       = "bk-image"
-// 	accessToken    = "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"
-// 	uploadsDirPath = "user"
-// )
 
 // by mahasiswa
 func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *http.Request) error {
@@ -49,62 +35,11 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 		return fmt.Errorf("mohon untuk melengkapi data")
 	}
 
-	file, handler, err := r.FormFile("file")
+	imageUrl, err := intermoni.SaveFileToGithub("Fatwaff", "fax.mp4@gmail.com", "bk-image", "user" ,r)
 	if err != nil {
-		return fmt.Errorf("error 1: %s", err)
+		return fmt.Errorf("error save file: %s", err)
 	}
-	defer file.Close()
-
-	// Generate a random filename
-	randomFileName, err := generateRandomFileName(handler.Filename)
-	if err != nil {
-		return fmt.Errorf("error 2: %s", err)
-	}
-
-	// // Create a new file with the random filename
-	// newFile, err := os.Create(filepath.Join("uploads", randomFileName))
-	// if err != nil {
-	// 	return fmt.Errorf("error 3: %s", err)
-	// }
-	// defer newFile.Close()
-
-	// // Copy the content of the uploaded file to the new file
-	// _, err = io.Copy(newFile, file)
-	// if err != nil {
-	// 	return fmt.Errorf("error 4: %s", err)
-	// }
-
-	// Read the content of the file into a byte slice
-	fileContent, err := io.ReadAll(file)
-	if err != nil {
-		return fmt.Errorf("error 5: %s", err)
-	}
-
-	access_token := os.Getenv("GITHUB_ACCESS_TOKEN")
-	if access_token == "" {
-		return fmt.Errorf("error access token: %s", err)
-	}
-
-	// Initialize GitHub client
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: access_token},
-	)
-	tc := oauth2.NewClient(r.Context(), ts)
-	client := github.NewClient(tc)
-
-	// Create a new repository file
-	repoOwner := "Fatwaff"
-	repoName := "bk-image"
-	_, _, err = client.Repositories.CreateFile(r.Context(), repoOwner, repoName, "user/"+randomFileName, &github.RepositoryContentFileOptions{
-		Message:   github.String("Add new file"),
-		Content:   fileContent,
-		Committer: &github.CommitAuthor{Name: github.String("Fatwaff"), Email: github.String("fax.mp4@gmail.com")},
-	})
-	if err != nil {
-		return fmt.Errorf("error 6: %s", err)
-	}
-
-	imageUrl := "https://raw.githubusercontent.com/" + repoOwner + "/" + repoName + "/main/user/" + randomFileName
+	
 	mhs := bson.M{
 		"namalengkap":     namalengkap,
 		"tanggallahir":    tanggallahir,
@@ -113,7 +48,7 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 		"perguruantinggi": perguruantinggi,
 		"prodi":           prodi,
 		"seleksikampus":   0,
-		"imagename":       imageUrl,
+		"imageurl":       imageUrl,
 		"akun": intermoni.User{
 			ID: mahasiswa.Akun.ID,
 		},
@@ -123,17 +58,6 @@ func UpdateMahasiswa(idparam, iduser primitive.ObjectID, db *mongo.Database, r *
 		return err
 	}
 	return nil
-}
-
-func generateRandomFileName(originalFilename string) (string, error) {
-	randomBytes := make([]byte, 16)
-	_, err := rand.Read(randomBytes)
-	if err != nil {
-		return "", err
-	}
-
-	randomFileName := fmt.Sprintf("%x%s", randomBytes, filepath.Ext(originalFilename))
-	return randomFileName, nil
 }
 
 // by admin
