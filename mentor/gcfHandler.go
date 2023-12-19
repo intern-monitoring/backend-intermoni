@@ -51,7 +51,7 @@ func Put(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 		Response.Message = "Gagal Decode Token : " + err.Error()
 		return intermoni.GCFReturnStruct(Response)
 	}
-	if user_login.Role != "mitra" {
+	if user_login.Role != "mentor" {
 		Response.Message = "Maneh tidak memiliki akses"
 		return intermoni.GCFReturnStruct(Response)
 	}
