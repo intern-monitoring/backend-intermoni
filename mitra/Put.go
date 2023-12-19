@@ -12,6 +12,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+var imageUrl string
+
 // by mitra
 func UpdateMitra(idparam, iduser primitive.ObjectID, db *mongo.Database, r *http.Request) error {
 	mitra, err := intermoni.GetMitraFromAkun(iduser, db)
@@ -33,14 +35,20 @@ func UpdateMitra(idparam, iduser primitive.ObjectID, db *mongo.Database, r *http
 	tentang := r.FormValue("tentang")
 	alamat := r.FormValue("alamat")
 	website := r.FormValue("website")
+	img := r.FormValue("file")
+
 
 	if namanarahubung == "" || nohpnarahubung == "" || nama == "" || kategori == "" || sektorindustri == "" || alamat == "" || website == "" {
 		return fmt.Errorf("mohon untuk melengkapi data")
 	}
 
-	imageUrl, err := intermoni.SaveFileToGithub("Fatwaff", "fax.mp4@gmail.com", "bk-image", "user" ,r)
-	if err != nil {
-		return fmt.Errorf("error save file: %s", err)
+	if img != "" {
+		imageUrl = img
+	} else {
+		imageUrl, err = intermoni.SaveFileToGithub("Fatwaff", "fax.mp4@gmail.com", "bk-image", "user" ,r)
+		if err != nil {
+			return fmt.Errorf("error save file: %s", err)
+		}
 	}
 
 	mtr := bson.M{

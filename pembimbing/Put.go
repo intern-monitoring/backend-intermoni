@@ -11,6 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+var imageUrl string
+
 func UpdatePembimbing(idparam, iduser primitive.ObjectID, db *mongo.Database, r *http.Request) error {
 	pembimbing, err := intermoni.GetPembimbingFromAkun(iduser, db)
 	if err != nil {
@@ -22,14 +24,19 @@ func UpdatePembimbing(idparam, iduser primitive.ObjectID, db *mongo.Database, r 
 	namalengkap := r.FormValue("namalengkap")
 	nik := r.FormValue("nik")
 	prodi := r.FormValue("prodi")
+	img := r.FormValue("file")
 
 	if namalengkap == "" || nik == "" || prodi == "" {
 		return fmt.Errorf("mohon untuk melengkapi data")
 	}
 
-	imageUrl, err := intermoni.SaveFileToGithub("Fatwaff", "fax.mp4@gmail.com", "bk-image", "user" ,r)
-	if err != nil {
-		return fmt.Errorf("error save file: %s", err)
+	if img != "" {
+		imageUrl = img
+	} else {
+		imageUrl, err = intermoni.SaveFileToGithub("Fatwaff", "fax.mp4@gmail.com", "bk-image", "user" ,r)
+		if err != nil {
+			return fmt.Errorf("error save file: %s", err)
+		}
 	}
 
 	data := bson.M{
