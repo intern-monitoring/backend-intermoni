@@ -165,7 +165,7 @@ func TestGetMahasiswaMagangFromID(t *testing.T) {
 }
 
 func TestGetMahasiswaFromAkun(t *testing.T) {
-	id := "6556115b70ac8168bbdd60a5"
+	id := "65812d5035c5f81cdc6991f5"
 	objectId, _ := primitive.ObjectIDFromHex(id)
 	hasil, err := intermoni.GetMahasiswaFromAkun(objectId, db)
 	if err != nil {

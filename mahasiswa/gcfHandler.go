@@ -1,6 +1,7 @@
 package mahasiswa
 
 import (
+	"encoding/json"
 	"net/http"
 
 	intermoni "github.com/intern-monitoring/backend-intermoni"
@@ -34,6 +35,11 @@ func Put(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 	}
 	if user_login.Role == "mahasiswa" {
 		return GCFHandlerUpdateByMahasiswa(idparam, user_login.Id, conn, r)
+	}
+	err = json.NewDecoder(r.Body).Decode(&mahasiswa)
+	if err != nil {
+		Response.Message = "error parsing application/json: " + err.Error()
+		return intermoni.GCFReturnStruct(Response)
 	}
 	if user_login.Role == "admin" {
 		return GCFHandlerUpdateByAdmin(idparam, mahasiswa, conn, r)
