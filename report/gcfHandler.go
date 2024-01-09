@@ -26,12 +26,7 @@ func Post(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request
 		Response.Message = "Maneh tidak memiliki akses"
 		return intermoni.GCFReturnStruct(Response)
 	}
-	err = json.NewDecoder(r.Body).Decode(&report)
-	if err != nil {
-		Response.Message = "error parsing application/json: " + err.Error()
-		return intermoni.GCFReturnStruct(Response)
-	}
-	err = TambahReportByMahasiswa(user_login.Id, conn, report)
+	err = TambahReportByMahasiswa(user_login.Id, conn, r)
 	if err != nil {
 		Response.Message = err.Error()
 		return intermoni.GCFReturnStruct(Response)
@@ -51,10 +46,6 @@ func Put(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 		Response.Message = "Gagal Decode Token : " + err.Error()
 		return intermoni.GCFReturnStruct(Response)
 	}
-	if user_login.Role != "pembimbing" {
-		Response.Message = "Maneh tidak memiliki akses"
-		return intermoni.GCFReturnStruct(Response)
-	}
 	id := intermoni.GetID(r)
 	if id == "" {
 		Response.Message = "Wrong parameter"
@@ -65,19 +56,43 @@ func Put(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 		Response.Message = "Invalid id parameter"
 		return intermoni.GCFReturnStruct(Response)
 	}
+	if user_login.Role != "mahasiswa" {
+		err = UpdateReportByMahasiswa(idparam, user_login.Id, conn, r)
+		if err != nil {
+			Response.Message = err.Error()
+			return intermoni.GCFReturnStruct(Response)
+		}
+		Response.Status = true
+		Response.Message = "Berhasil Update Report"
+		return intermoni.GCFReturnStruct(Response)
+	}
 	err = json.NewDecoder(r.Body).Decode(&report)
 	if err != nil {
 		Response.Message = "error parsing application/json: " + err.Error()
 		return intermoni.GCFReturnStruct(Response)
 	}
-	err = UpdateReportByMahasiswa(idparam, user_login.Id, conn, report)
-	if err != nil {
-		Response.Message = err.Error()
+	if user_login.Role == "mentor" {
+		err = TambahFeedbackNilaiByMentor(idparam, user_login.Id, conn, report)
+		if err != nil {
+			Response.Message = err.Error()
+			return intermoni.GCFReturnStruct(Response)
+		}
+		Response.Status = true
+		Response.Message = "Berhasil Tambah Feedback dan Nilai Report"
+		return intermoni.GCFReturnStruct(Response)
+	}
+	if user_login.Role == "pembimbing" {
+		err = TambahNilaiByPembimbing(idparam, user_login.Id, conn, report)
+		if err != nil {
+			Response.Message = err.Error()
+			return intermoni.GCFReturnStruct(Response)
+		}
+		Response.Status = true
+		Response.Message = "Berhasil Tambah Nilai Report"
 		return intermoni.GCFReturnStruct(Response)
 	}
 	//
-	Response.Status = true
-	Response.Message = "Berhasil Update Report"
+	Response.Message = "Maneh tidak memiliki akses"
 	return intermoni.GCFReturnStruct(Response)
 }
 
@@ -125,11 +140,48 @@ func Get(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 		return intermoni.GCFReturnStruct(Response)
 	}
 	id := intermoni.GetID(r)
+	if r.URL.Path == "/mahasiswa-magang" {
+		if id == "" {
+			Response.Message = "Wrong parameter"
+			return intermoni.GCFReturnStruct(Response)
+		}
+		idparam, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			Response.Message = "Invalid id parameter"
+			return intermoni.GCFReturnStruct(Response)
+		}
+		if user_login.Role == "pembimbing" {
+			report, err := GetAllReportOlehPembimbing(idparam, conn)
+			if err != nil {
+				Response.Message = err.Error()
+				return intermoni.GCFReturnStruct(Response)
+			}
+			return intermoni.GCFReturnStruct(report)
+		}
+		if user_login.Role == "mentor" {
+			report, err := GetAllReport(idparam, conn)
+			if err != nil {
+				Response.Message = err.Error()
+				return intermoni.GCFReturnStruct(Response)
+			}
+			return intermoni.GCFReturnStruct(report)
+		}
+		Response.Message = "Maneh tidak memiliki akses"
+		return intermoni.GCFReturnStruct(Response)
+	}
 	if id != "" {
 		idparam, err := primitive.ObjectIDFromHex(id)
 		if err != nil {
 			Response.Message = "Invalid id parameter"
 			return intermoni.GCFReturnStruct(Response)
+		}
+		if user_login.Role == "pembimbing" {
+			report, err := GetReportByIDOlehPembimbing(idparam, conn)
+			if err != nil {
+				Response.Message = err.Error()
+				return intermoni.GCFReturnStruct(Response)
+			}
+			return intermoni.GCFReturnStruct(report)
 		}
 		report, err := GetReportByID(idparam, conn)
 		if err != nil {
@@ -139,15 +191,7 @@ func Get(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 		return intermoni.GCFReturnStruct(report)
 	}
 	if user_login.Role == "mahasiswa" {
-		report, err := GetAllReportByMahasiswa(user_login.Id, conn)
-		if err != nil {
-			Response.Message = err.Error()
-			return intermoni.GCFReturnStruct(Response)
-		}
-		return intermoni.GCFReturnStruct(report)
-	}
-	if user_login.Role == "mentor" || user_login.Role == "pembimbing" {
-		report, err := GetAllReportByPenerima(user_login.Id, conn)
+		report, err := GetAllReport(user_login.Id, conn)
 		if err != nil {
 			Response.Message = err.Error()
 			return intermoni.GCFReturnStruct(Response)

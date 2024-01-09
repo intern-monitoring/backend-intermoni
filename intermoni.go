@@ -382,6 +382,19 @@ func GetMahasiswaMagangFromID(_id primitive.ObjectID, db *mongo.Database) (mahas
 	return mahasiswa_magang, nil
 }
 
+func GetMahasiswaMagangByMahasiswa(idmahasiswa primitive.ObjectID, db *mongo.Database) (mahasiswa_magang MahasiswaMagang, err error) {
+	collection := db.Collection("mahasiswa_magang")
+	filter := bson.M{"mahasiswa._id": idmahasiswa}
+	err = collection.FindOne(context.Background(), filter).Decode(&mahasiswa_magang)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return mahasiswa_magang, fmt.Errorf("mahasiswa magang tidak ditemukan")
+		}
+		return mahasiswa_magang, fmt.Errorf("terjadi kesalahan")
+	}
+	return mahasiswa_magang, nil
+}
+
 // get report
 func GetReportFromID(_id primitive.ObjectID, db *mongo.Database) (report Report, err error) {
 	filter := bson.M{"_id": _id}

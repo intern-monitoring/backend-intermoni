@@ -3,6 +3,7 @@ package report
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
 	intermoni "github.com/intern-monitoring/backend-intermoni"
@@ -11,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func TambahReportByMahasiswa(iduser primitive.ObjectID, db *mongo.Database, insertedDoc intermoni.Report) error {
+func TambahReportByMahasiswa(iduser primitive.ObjectID, db *mongo.Database, r *http.Request) error {
 	mahasiswa_magang, err := GetMahasiswaMagangByMahasiswa(iduser, db)
 	if err != nil {
 		return err
@@ -19,22 +20,33 @@ func TambahReportByMahasiswa(iduser primitive.ObjectID, db *mongo.Database, inse
 	if mahasiswa_magang.Status != 1 {
 		return fmt.Errorf("kamu belum lolos seleksi")
 	}
-	if insertedDoc.Judul == "" || insertedDoc.Isi == "" || insertedDoc.Penerima.ID == primitive.NilObjectID {
+
+	task := r.FormValue("task")
+	deskripsi := r.FormValue("deskripsi")
+	hasil := r.FormValue("hasil")
+
+	if task == "" || deskripsi == "" || hasil == ""  {
 		return fmt.Errorf("mohon untuk melengkapi data")
 	}
-	if insertedDoc.Penerima.ID != mahasiswa_magang.Pembimbing.ID && insertedDoc.Penerima.ID != mahasiswa_magang.Mentor.ID {
-		return fmt.Errorf("kamu tidak dapat memberikan report selain kepada pembimbing dan mentor kamu")
+
+	imageUrl, err := intermoni.SaveFileToGithub("Fatwaff", "fax.mp4@gmail.com", "bk-image", "report" ,r)
+	if err != nil {
+		return fmt.Errorf("error save file: %s", err)
 	}
+	
 	data := bson.M{
 		"mahasiswamagang": bson.M{
 			"_id": mahasiswa_magang.ID,
 		},
-		"judul":    insertedDoc.Judul,
-		"isi":      insertedDoc.Isi,
-		"penerima": bson.M{
-			"_id": insertedDoc.Penerima.ID,
-		},
+		"task": task,
+		"deskripsi": deskripsi,
+		"hasil": hasil,
+		"kehadiran": imageUrl,
 		"createdat": primitive.NewDateTimeFromTime(time.Now().UTC()),
+		"updatedat": primitive.NewDateTimeFromTime(time.Now().UTC()),
+		"feedback": "",
+		"nilaimetor": 0,
+		"nilaipembimbing": 0,
 	}
 	_, err = intermoni.InsertOneDoc(db, "report", data)
 	if err != nil {

@@ -89,13 +89,24 @@ type Mentor struct {
 	Akun				User				`bson:"akun,omitempty" json:"akun,omitempty"`
 }
 
+type Task struct {
+	ID					primitive.ObjectID	`bson:"_id,omitempty" json:"_id,omitempty"`
+	MahasiswaMagang		MahasiswaMagang		`bson:"mahasiswamagang,omitempty" json:"mahasiswamagang,omitempty"`
+	Tasks				[]string			`bson:"tasks,omitempty" json:"tasks,omitempty"`
+}
+
 type Report struct {
 	ID					primitive.ObjectID	`bson:"_id,omitempty" json:"_id,omitempty"`
 	MahasiswaMagang		MahasiswaMagang		`bson:"mahasiswamagang,omitempty" json:"mahasiswamagang,omitempty"`
-	Judul				string				`bson:"judul,omitempty" json:"judul,omitempty"`
-	Isi					string				`bson:"isi,omitempty" json:"isi,omitempty"`
-	Penerima			User				`bson:"penerima,omitempty" json:"penerima,omitempty"`
+	Task				string				`bson:"task,omitempty" json:"task,omitempty"`
+	Deskripsi			string				`bson:"deskripsi,omitempty" json:"deskripsi,omitempty"`
+	Hasil				string				`bson:"hasil,omitempty" json:"hasil,omitempty"`
+	Kehadiran			string				`bson:"kehadiran,omitempty" json:"kehadiran,omitempty"`
 	CreatedAt			primitive.DateTime	`bson:"createdat,omitempty" json:"createdat,omitempty"`
+	UpdatedAt			primitive.DateTime	`bson:"updatedat,omitempty" json:"updatedat,omitempty"`
+	Feedback			string				`bson:"feedback,omitempty" json:"feedback,omitempty"`
+	NilaiMentor			int					`bson:"nilaimentor,omitempty" json:"nilaimentor,omitempty"`
+	NilaiPembimbing		int					`bson:"nilaipembimbing,omitempty" json:"nilaipembimbing,omitempty"`
 }
 
 type Credential struct {

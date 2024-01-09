@@ -134,7 +134,7 @@ func Put(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 			return intermoni.GCFReturnStruct(Response)
 		}
 		Response.Status = true
-		Response.Message = "Berhasil Seleksi"
+		Response.Message = "Berhasil memilih magang"
 		return intermoni.GCFReturnStruct(Response)
 	}
 	//
@@ -190,6 +190,22 @@ func GetMahasiswaMagang(user_login intermoni.Payload, conn *mongo.Database) stri
 	}
 	if user_login.Role == "mahasiswa" {
 		mahasiswa_magang, err := GetMahasiswaMagangByMahasiswa(user_login.Id, conn)
+		if err != nil {
+			Response.Message = err.Error()
+			return intermoni.GCFReturnStruct(Response)
+		}
+		return intermoni.GCFReturnStruct(mahasiswa_magang)
+	}
+	if user_login.Role == "mentor" {
+		mahasiswa_magang, err := GetMahasiswaMagangByMentor(user_login.Id, conn)
+		if err != nil {
+			Response.Message = err.Error()
+			return intermoni.GCFReturnStruct(Response)
+		}
+		return intermoni.GCFReturnStruct(mahasiswa_magang)
+	}
+	if user_login.Role == "pembimbing" {
+		mahasiswa_magang, err := GetMahasiswaMagangByPembimbing(user_login.Id, conn)
 		if err != nil {
 			Response.Message = err.Error()
 			return intermoni.GCFReturnStruct(Response)

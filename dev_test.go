@@ -234,7 +234,7 @@ func TestSeleksiBerkasMahasiswaMagangByMitra2(t *testing.T) {
 func TestGetAllReportByMahasiswa5(t *testing.T) {
 	id := "655b1dc27459e5e3360e7442"
 	objectId, _ := primitive.ObjectIDFromHex(id)
-	hasil, err := report.GetAllReportByPenerima(objectId, db)
+	hasil, err := report.GetAllReport(objectId, db)
 	if err != nil {
 		t.Errorf("Error TestGetAllReportByMahasiswa: %v", err)
 	} else {
