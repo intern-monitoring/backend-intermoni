@@ -159,7 +159,7 @@ func Get(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 			return intermoni.GCFReturnStruct(report)
 		}
 		if user_login.Role == "mentor" {
-			report, err := GetAllReport(idparam, conn)
+			report, err := GetAllReportOlehMentor(idparam, conn)
 			if err != nil {
 				Response.Message = err.Error()
 				return intermoni.GCFReturnStruct(Response)

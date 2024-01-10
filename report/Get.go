@@ -90,6 +90,42 @@ func GetAllReportOlehPembimbing(_id primitive.ObjectID, db *mongo.Database) (dat
 	return data, nil
 }
 
+func GetAllReportOlehMentor(_id primitive.ObjectID, db *mongo.Database) (data []bson.M, err error) {
+	var report []intermoni.Report
+	collection := db.Collection("report")
+	filter := bson.M{"mahasiswamagang._id": _id}
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return data, fmt.Errorf("error GetAllReportByMahasiswa mongo: %s", err)
+	}
+	err = cursor.All(context.Background(), &report)
+	if err != nil {
+		return data, fmt.Errorf("error GetAllReportByMahasiswa context: %s", err)
+	}
+	for _, r := range report {
+		mahasiswa_magang, err := intermoni.GetMahasiswaMagangFromID(r.MahasiswaMagang.ID, db)
+		if err != nil {
+			return data, fmt.Errorf("error GetAllReportByMahasiswa get mahasiswa magang: %s", err)
+		}
+		magang, err := intermoni.GetMagangFromID(mahasiswa_magang.Magang.ID, db)
+		if err != nil {
+			return data, fmt.Errorf("error GetAllReportByMahasiswa get magang: %s", err)
+		}
+		datareport := bson.M{
+			"magang": magang,
+			"_id": r.ID,
+			"task": r.Task,
+			"deskripsi": r.Deskripsi,
+			"hasil": r.Hasil,
+			"kehadiran": r.Kehadiran,
+			"createdat": r.CreatedAt,
+			"updatedat": r.UpdatedAt,
+		}
+		data = append(data, datareport)
+	}
+	return data, nil
+}
+
 func GetReportByID(_id primitive.ObjectID, db *mongo.Database) (data bson.M, err error) {
 	var report intermoni.Report
 	collection := db.Collection("report")
