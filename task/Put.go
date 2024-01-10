@@ -9,21 +9,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func EditTaskOlehMentor(idtask primitive.ObjectID, db *mongo.Database, updatedDoc intermoni.Task) error {
+func EditTaskOlehMentor(idmahasiswamagang primitive.ObjectID, db *mongo.Database, updatedDoc intermoni.Task) error {
 	if updatedDoc.Tasks == nil {
 		return fmt.Errorf("mohon untuk melengkapi data")
 	}
-	task, err := GetTaskFromID(idtask, db)
-	if err != nil {
-		return err
-	}
 	data := bson.M{
 		"mahasiswamagang": bson.M{
-			"_id": task.MahasiswaMagang.ID,
+			"_id": idmahasiswamagang,
 		},
 		"tasks": updatedDoc.Tasks,
 	}
-	err = intermoni.UpdateOneDoc(idtask, db, "task", data)
+	err := intermoni.UpdateOneDoc(idmahasiswamagang, db, "task", data)
 	if err != nil {
 		return err
 	}
