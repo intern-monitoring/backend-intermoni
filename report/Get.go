@@ -14,7 +14,15 @@ import (
 func GetAllReport(_id primitive.ObjectID, db *mongo.Database) (data []bson.M, err error) {
 	var report []intermoni.Report
 	collection := db.Collection("report")
-	filter := bson.M{"mahasiswamagang._id": _id}
+	mahasiswa, err := intermoni.GetMahasiswaFromAkun(_id, db)
+	if err != nil {
+		return data, fmt.Errorf("error GetAllReport get mahasiswa: %s", err)
+	}
+	mahasiswa_magang, err := intermoni.GetMahasiswaMagangByMahasiswa(mahasiswa.ID, db)
+	if err != nil {
+		return data, fmt.Errorf("error GetAllReport get mahasiswa magang: %s", err)
+	}
+	filter := bson.M{"mahasiswamagang._id": mahasiswa_magang.ID}
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
 		return data, fmt.Errorf("error GetAllReportByMahasiswa mongo: %s", err)
