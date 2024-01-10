@@ -14,11 +14,7 @@ import (
 func GetAllReport(_id primitive.ObjectID, db *mongo.Database) (data []bson.M, err error) {
 	var report []intermoni.Report
 	collection := db.Collection("report")
-	mahasiswa_magang, err := GetMahasiswaMagangByMahasiswa(_id, db)
-	if err != nil {
-		return data, fmt.Errorf("error GetAllReportByMahasiswa get mahasiswa: %s", err)
-	}
-	filter := bson.M{"mahasiswamagang._id": mahasiswa_magang.ID}
+	filter := bson.M{"mahasiswamagang._id": _id}
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
 		return data, fmt.Errorf("error GetAllReportByMahasiswa mongo: %s", err)
@@ -54,11 +50,7 @@ func GetAllReport(_id primitive.ObjectID, db *mongo.Database) (data []bson.M, er
 func GetAllReportOlehPembimbing(_id primitive.ObjectID, db *mongo.Database) (data []bson.M, err error) {
 	var report []intermoni.Report
 	collection := db.Collection("report")
-	mahasiswa_magang, err := GetMahasiswaMagangByMahasiswa(_id, db)
-	if err != nil {
-		return data, fmt.Errorf("error GetAllReportByMahasiswa get mahasiswa: %s", err)
-	}
-	filter := bson.M{"mahasiswamagang._id": mahasiswa_magang.ID}
+	filter := bson.M{"mahasiswamagang._id": _id}
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
 		return data, fmt.Errorf("error GetAllReportByMahasiswa mongo: %s", err)
