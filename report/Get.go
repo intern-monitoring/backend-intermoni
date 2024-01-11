@@ -43,6 +43,7 @@ func GetAllReport(_id primitive.ObjectID, db *mongo.Database) (data []bson.M, er
 		datareport := bson.M{
 			"magang": magang,
 			"_id": r.ID,
+			"mahasiswamagang": r.MahasiswaMagang.ID,
 			"task": r.Task,
 			"deskripsi": r.Deskripsi,
 			"hasil": r.Hasil,
@@ -79,9 +80,15 @@ func GetAllReportOlehPembimbing(_id primitive.ObjectID, db *mongo.Database) (dat
 		if err != nil {
 			return data, fmt.Errorf("error GetAllReportByMahasiswa get magang: %s", err)
 		}
+		mahasiswa, err := intermoni.GetMahasiswaFromID(mahasiswa_magang.Mahasiswa.ID, db)
+		if err != nil {
+			return data, fmt.Errorf("error GetAllReportByMahasiswa get mahasiswa: %s", err)
+		}
 		datareport := bson.M{
+			"mahasiswa": mahasiswa,
 			"magang": magang,
 			"_id": r.ID,
+			"mahasiswamagang": r.MahasiswaMagang.ID,
 			"task": r.Task,
 			"deskripsi": r.Deskripsi,
 			"kehadiran": r.Kehadiran,
@@ -117,9 +124,15 @@ func GetAllReportOlehMentor(_id primitive.ObjectID, db *mongo.Database) (data []
 		if err != nil {
 			return data, fmt.Errorf("error GetAllReportByMahasiswa get magang: %s", err)
 		}
+		mahasiswa, err := intermoni.GetMahasiswaFromID(mahasiswa_magang.Mahasiswa.ID, db)
+		if err != nil {
+			return data, fmt.Errorf("error GetAllReportByMahasiswa get mahasiswa: %s", err)
+		}
 		datareport := bson.M{
+			"mahasiswa": mahasiswa,
 			"magang": magang,
 			"_id": r.ID,
+			"mahasiswamagang": r.MahasiswaMagang.ID,
 			"task": r.Task,
 			"deskripsi": r.Deskripsi,
 			"hasil": r.Hasil,
@@ -159,6 +172,7 @@ func GetReportByID(_id primitive.ObjectID, db *mongo.Database) (data bson.M, err
 		"mahasiswa": mahasiswa,
 		"magang": magang,
 		"_id": report.ID,
+		"mahasiswamagang": report.MahasiswaMagang.ID,
 		"task": report.Task,
 		"deskripsi": report.Deskripsi,
 		"hasil": report.Hasil,
@@ -196,6 +210,7 @@ func GetReportByIDOlehPembimbing(_id primitive.ObjectID, db *mongo.Database) (da
 		"mahasiswa": mahasiswa,
 		"magang": magang,
 		"_id": report.ID,
+		"mahasiswamagang": report.MahasiswaMagang.ID,
 		"task": report.Task,
 		"deskripsi": report.Deskripsi,
 		"kehadiran": report.Kehadiran,
