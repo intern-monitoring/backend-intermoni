@@ -56,7 +56,7 @@ func Put(PASETOPUBLICKEYENV, MONGOCONNSTRINGENV, dbname string, r *http.Request)
 		Response.Message = "Invalid id parameter"
 		return intermoni.GCFReturnStruct(Response)
 	}
-	if user_login.Role != "mahasiswa" {
+	if user_login.Role == "mahasiswa" {
 		err = UpdateReportByMahasiswa(idparam, user_login.Id, conn, r)
 		if err != nil {
 			Response.Message = err.Error()
