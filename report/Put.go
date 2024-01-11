@@ -65,7 +65,7 @@ func UpdateReportByMahasiswa(idreport, iduser primitive.ObjectID, db *mongo.Data
 		"createdat": report.CreatedAt,
 		"updatedat": primitive.NewDateTimeFromTime(time.Now().UTC()),
 		"feedback": "",
-		"nilaimetor": 0,
+		"nilaimentor": 0,
 		"nilaipembimbing": 0,
 	}
 	err = intermoni.UpdateOneDoc(idreport, db, "report", data)

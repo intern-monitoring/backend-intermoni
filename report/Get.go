@@ -51,7 +51,7 @@ func GetAllReport(_id primitive.ObjectID, db *mongo.Database) (data []bson.M, er
 			"createdat": r.CreatedAt,
 			"updatedat": r.UpdatedAt,
 			"feedback": r.Feedback,
-			"nilaimetor": r.NilaiMentor,
+			"nilaimentor": r.NilaiMentor,
 			"nilaipembimbing": r.NilaiPembimbing,
 		}
 		data = append(data, datareport)
@@ -95,7 +95,7 @@ func GetAllReportOlehPembimbing(_id primitive.ObjectID, db *mongo.Database) (dat
 			"createdat": r.CreatedAt,
 			"updatedat": r.UpdatedAt,
 			"feedback": r.Feedback,
-			"nilaimetor": r.NilaiMentor,
+			"nilaimentor": r.NilaiMentor,
 			"nilaipembimbing": r.NilaiPembimbing,
 		}
 		data = append(data, datareport)
@@ -140,7 +140,7 @@ func GetAllReportOlehMentor(_id primitive.ObjectID, db *mongo.Database) (data []
 			"createdat": r.CreatedAt,
 			"updatedat": r.UpdatedAt,
 			"feedback": r.Feedback,
-			"nilaimetor": r.NilaiMentor,
+			"nilaimentor": r.NilaiMentor,
 			"nilaipembimbing": r.NilaiPembimbing,
 		}
 		data = append(data, datareport)
@@ -180,7 +180,7 @@ func GetReportByID(_id primitive.ObjectID, db *mongo.Database) (data bson.M, err
 		"createdat": report.CreatedAt,
 		"updatedat": report.UpdatedAt,
 		"feedback": report.Feedback,
-		"nilaimetor": report.NilaiMentor,	
+		"nilaimentor": report.NilaiMentor,	
 		"nilaipembimbing": report.NilaiPembimbing,
 	}
 	return data, nil
@@ -217,7 +217,7 @@ func GetReportByIDOlehPembimbing(_id primitive.ObjectID, db *mongo.Database) (da
 		"createdat": report.CreatedAt,
 		"updatedat": report.UpdatedAt,
 		"feedback": report.Feedback,
-		"nilaimetor": report.NilaiMentor,
+		"nilaimentor": report.NilaiMentor,
 		"nilaipembimbing": report.NilaiPembimbing,
 	}
 	return data, nil

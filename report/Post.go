@@ -45,7 +45,7 @@ func TambahReportByMahasiswa(iduser primitive.ObjectID, db *mongo.Database, r *h
 		"createdat": primitive.NewDateTimeFromTime(time.Now().UTC()),
 		"updatedat": primitive.NewDateTimeFromTime(time.Now().UTC()),
 		"feedback": "",
-		"nilaimetor": 0,
+		"nilaimentor": 0,
 		"nilaipembimbing": 0,
 	}
 	_, err = intermoni.InsertOneDoc(db, "report", data)
