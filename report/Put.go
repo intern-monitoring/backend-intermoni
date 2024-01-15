@@ -105,7 +105,7 @@ func TambahFeedbackNilaiByMentor(idreport, iduser primitive.ObjectID, db *mongo.
 		"createdat": report.CreatedAt,
 		"updatedat": report.UpdatedAt,
 		"feedback": updatedDoc.Feedback,
-		"nilaimetor": updatedDoc.NilaiMentor,
+		"nilaimentor": updatedDoc.NilaiMentor,
 		"nilaipembimbing": report.NilaiPembimbing,
 	}
 	err = intermoni.UpdateOneDoc(idreport, db, "report", data)
@@ -148,7 +148,7 @@ func TambahNilaiByPembimbing(idreport, iduser primitive.ObjectID, db *mongo.Data
 		"createdat": report.CreatedAt,
 		"updatedat": report.UpdatedAt,
 		"feedback": report.Feedback,
-		"nilaimetor": report.NilaiMentor,
+		"nilaimentor": report.NilaiMentor,
 		"nilaipembimbing": updatedDoc.NilaiPembimbing,
 	}
 	err = intermoni.UpdateOneDoc(idreport, db, "report", data)
