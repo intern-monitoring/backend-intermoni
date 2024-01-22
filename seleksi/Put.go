@@ -55,7 +55,7 @@ func SeleksiBerkasMahasiswaMagangByMitra(idmahasiswamagang, iduser primitive.Obj
 		return err
 	}
 	if (insertedDoc.SeleksiBerkas == 1){
-		message := "Kamu lolos seleksi berkas\n\nSilahkan lanjut untuk tahap seleksi wewancara"
+		message := `Kamu lolos seleksi berkas\n\nSilahkan lanjut untuk tahap seleksi wewancara`
  		err = intermoni.SendWhatsAppConfirmation(mahasiswa.Akun.ID, db, message)
 		if err != nil {
 			return err
@@ -63,7 +63,7 @@ func SeleksiBerkasMahasiswaMagangByMitra(idmahasiswamagang, iduser primitive.Obj
 		return nil
 	}
 	if (insertedDoc.SeleksiBerkas == 2){
-		message := "Mohon maaf kamu tidak lolos seleksi berkas\n\nTetap semangat dan jangan menyerah !!!"
+		message := `Mohon maaf kamu tidak lolos seleksi berkas\n\nTetap semangat dan jangan menyerah !!!`
  		err = intermoni.SendWhatsAppConfirmation(mahasiswa.Akun.ID, db, message)
 		if err != nil {
 			return err
@@ -120,7 +120,7 @@ func SeleksiWewancaraMahasiswaMagangByMitra(idmahasiswamagang, iduser primitive.
 		return err
 	}
 	if (insertedDoc.SeleksiWewancara == 1){
-		message := "Kamu lolos seleksi wewancara!!!\n\nSilahkan konfirmasi untuk mengambil magang"
+		message := `Kamu lolos seleksi wewancara!!!\n\nSilahkan konfirmasi untuk mengambil magang`
  		err = intermoni.SendWhatsAppConfirmation(mahasiswa.Akun.ID, db, message)
 		if err != nil {
 			return err
@@ -128,7 +128,7 @@ func SeleksiWewancaraMahasiswaMagangByMitra(idmahasiswamagang, iduser primitive.
 		return nil
 	}
 	if (insertedDoc.SeleksiWewancara == 2){
-		message := "Mohon maaf kamu tidak lolos seleksi wewancara\n\nCoba lagi lain kali yaa..."
+		message := `Mohon maaf kamu tidak lolos seleksi wewancara\n\nCoba lagi lain kali yaa...`
  		err = intermoni.SendWhatsAppConfirmation(mahasiswa.Akun.ID, db, message)
 		if err != nil {
 			return err

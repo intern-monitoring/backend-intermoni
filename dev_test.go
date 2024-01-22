@@ -242,6 +242,17 @@ func TestGetAllReportByMahasiswa5(t *testing.T) {
 	}
 }
 
+func TestSendWhatsAppConfirmation12(t *testing.T) {
+	id := "65ae77e51c0064f4ec9e135e"
+	objectId, _ := primitive.ObjectIDFromHex(id)
+	err := intermoni.SendWhatsAppConfirmation(objectId, db, `nsdn\nkdk`)
+	if err != nil {
+		t.Errorf("Error sending whatsapp: %v", err)
+	} else {
+		fmt.Println("Send whatsapp success")
+	}
+}
+
 // func TestInsertOneMagang(t *testing.T) {
 // 	var doc model.Magang
 // //    doc.Logo = "https://fatwaff.github.io/bk-image/user/ford.jpg"
