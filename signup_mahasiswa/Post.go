@@ -16,7 +16,7 @@ import (
 
 func SignUpMahasiswa(db *mongo.Database, insertedDoc intermoni.Mahasiswa) error {
 	objectId := primitive.NewObjectID()
-	if insertedDoc.NamaLengkap == "" || insertedDoc.TanggalLahir == "" || insertedDoc.JenisKelamin == "" || insertedDoc.NIM == "" || insertedDoc.PerguruanTinggi == "" || insertedDoc.Prodi == "" || insertedDoc.Akun.Email == "" || insertedDoc.Akun.Password == "" {
+	if insertedDoc.NamaLengkap == "" || insertedDoc.TanggalLahir == "" || insertedDoc.JenisKelamin == "" || insertedDoc.NIM == "" || insertedDoc.PerguruanTinggi == "" || insertedDoc.Prodi == "" || insertedDoc.Akun.Email == "" || insertedDoc.Akun.Password == "" || insertedDoc.Akun.Phone == "" {
 		return fmt.Errorf("mohon untuk melengkapi data")
 	}
 	if err := checkmail.ValidateFormat(insertedDoc.Akun.Email); err != nil {
@@ -25,6 +25,10 @@ func SignUpMahasiswa(db *mongo.Database, insertedDoc intermoni.Mahasiswa) error 
 	userExists, _ := intermoni.GetUserFromEmail(insertedDoc.Akun.Email, db)
 	if insertedDoc.Akun.Email == userExists.Email {
 		return fmt.Errorf("email sudah terdaftar")
+	}
+	phoneExists, _ := intermoni.GetUserFromPhone(insertedDoc.Akun.Phone, db)
+	if insertedDoc.Akun.Phone == phoneExists.Phone {
+		return fmt.Errorf("nomor telepon sudah terdaftar")
 	}
 	if insertedDoc.Akun.Confirmpassword != insertedDoc.Akun.Password {
 		return fmt.Errorf("konfirmasi password salah")

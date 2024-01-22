@@ -1,6 +1,7 @@
 package intermoni
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
 	"encoding/json"
@@ -102,6 +103,19 @@ func GetUserFromEmail(email string, db *mongo.Database) (doc User, err error) {
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return doc, fmt.Errorf("email tidak ditemukan")
+		}
+		return doc, fmt.Errorf("kesalahan server")
+	}
+	return doc, nil
+}
+
+func GetUserFromPhone(phone string, db *mongo.Database) (doc User, err error) {
+	collection := db.Collection("user")
+	filter := bson.M{"phone": phone}
+	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return doc, fmt.Errorf("phone tidak ditemukan")
 		}
 		return doc, fmt.Errorf("kesalahan server")
 	}
@@ -485,4 +499,45 @@ func generateRandomFileName(originalFilename string) (string, error) {
 
 	randomFileName := fmt.Sprintf("%x%s", randomBytes, filepath.Ext(originalFilename))
 	return randomFileName, nil
+}
+
+func SendWhatsAppConfirmation(iduser primitive.ObjectID, db *mongo.Database, message string) error {
+	url := "https://api.wa.my.id/api/send/message/text"
+
+	user, err := GetUserFromID(iduser, db)
+	if err != nil {
+		return err
+	}
+
+	// Data yang akan dikirimkan dalam format JSON
+	jsonStr := []byte(`{
+        "to": "` + user.Phone + `",
+        "isgroup": false,
+        "messages": "` + message + `"
+    }`)
+
+	// Membuat permintaan HTTP POST
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	if err != nil {
+		return err
+	}
+
+	// Menambahkan header ke permintaan
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Token", os.Getenv("TOKENWEBHOOK"))
+	// req.Header.Set("Token", "v4.public.eyJleHAiOiIyMDI0LTAyLTE5VDIxOjA3OjM2WiIsImlhdCI6IjIwMjQtMDEtMjBUMjE6MDc6MzZaIiwiaWQiOiI2MjgyMzE3MTUwNjgxIiwibmJmIjoiMjAyNC0wMS0yMFQyMTowNzozNloiff1YQuHHPwSzGpisAMb9rTLP58-jCqtByzePJACBLghprkq2HXtTSbVTShc49m3GIVkU42VSl8uSGme8c4vXnQc")
+	req.Header.Set("Content-Type", "application/json")
+
+	// Melakukan permintaan HTTP POST
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Menampilkan respons dari server
+	fmt.Println("Response Status:", resp.Status)
+
+	return nil
 }

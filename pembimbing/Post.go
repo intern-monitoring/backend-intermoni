@@ -16,7 +16,7 @@ import (
 
 func AddPembimbingByAdmin(db *mongo.Database, insertedDoc intermoni.Pembimbing) error {
 	objectId := primitive.NewObjectID()
-	if insertedDoc.NamaLengkap == "" || insertedDoc.NIK == "" || insertedDoc.Prodi == "" || insertedDoc.Akun.Email == "" || insertedDoc.Akun.Password == "" {
+	if insertedDoc.NamaLengkap == "" || insertedDoc.NIK == "" || insertedDoc.Prodi == "" || insertedDoc.Akun.Email == "" || insertedDoc.Akun.Password == "" || insertedDoc.Akun.Phone == "" {
 		return fmt.Errorf("mohon untuk melengkapi data")
 	}
 	if err := checkmail.ValidateFormat(insertedDoc.Akun.Email); err != nil {
@@ -25,6 +25,10 @@ func AddPembimbingByAdmin(db *mongo.Database, insertedDoc intermoni.Pembimbing) 
 	userExists, _ := intermoni.GetUserFromEmail(insertedDoc.Akun.Email, db)
 	if insertedDoc.Akun.Email == userExists.Email {
 		return fmt.Errorf("email sudah terdaftar")
+	}
+	phoneExists, _ := intermoni.GetUserFromPhone(insertedDoc.Akun.Phone, db)
+	if insertedDoc.Akun.Phone == phoneExists.Phone {
+		return fmt.Errorf("nomor telepon sudah terdaftar")
 	}
 	if insertedDoc.Akun.Confirmpassword != insertedDoc.Akun.Password {
 		return fmt.Errorf("konfirmasi password salah")
