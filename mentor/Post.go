@@ -52,6 +52,7 @@ func AddMentorByMitra(iduser primitive.ObjectID, db *mongo.Database, insertedDoc
 	user := bson.M{
 		"_id":      objectId,
 		"email":    insertedDoc.Akun.Email,
+		"phone":    insertedDoc.Akun.Phone,
 		"password": hex.EncodeToString(hashedPassword),
 		"salt":     hex.EncodeToString(salt),
 		"role":     "mentor",

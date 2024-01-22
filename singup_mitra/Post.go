@@ -48,6 +48,7 @@ func SignUpMitra(db *mongo.Database, insertedDoc intermoni.Mitra) error {
 	user := bson.M{
 		"_id":      objectId,
 		"email":    insertedDoc.Akun.Email,
+		"phone":    insertedDoc.Akun.Phone,
 		"password": hex.EncodeToString(hashedPassword),
 		"salt":     hex.EncodeToString(salt),
 		"role":     "mitra",
