@@ -112,6 +112,19 @@ func TambahFeedbackNilaiByMentor(idreport, iduser primitive.ObjectID, db *mongo.
 	if err != nil {
 		return err
 	}
+	mahasiswa, err := intermoni.GetMahasiswaFromID(mahasiswa_magang.Mahasiswa.ID, db)
+	if err != nil {
+		return err
+	}
+	user, err := intermoni.GetUserFromID(mahasiswa.Akun.ID, db)
+	if err != nil {
+		return err
+	}
+	message := `Halo ` + mahasiswa.NamaLengkap + `,\n\nReport kamu dengan task ` + report.Task  + ` pada tanggal ` + report.CreatedAt.Time().Format("02-01-2006 15:04:05") + `, telah diberi nilai oleh mentor kamu. Silahkan cek di aplikasi intermoni.my.id.\n\nTerima kasih,\nAdmin Intern Monitoring`
+	err = intermoni.SendWhatsAppConfirmation(user.Phone, db, message)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -152,6 +165,19 @@ func TambahNilaiByPembimbing(idreport, iduser primitive.ObjectID, db *mongo.Data
 		"nilaipembimbing": updatedDoc.NilaiPembimbing,
 	}
 	err = intermoni.UpdateOneDoc(idreport, db, "report", data)
+	if err != nil {
+		return err
+	}
+	mahasiswa, err := intermoni.GetMahasiswaFromID(mahasiswa_magang.Mahasiswa.ID, db)
+	if err != nil {
+		return err
+	}
+	user, err := intermoni.GetUserFromID(mahasiswa.Akun.ID, db)
+	if err != nil {
+		return err
+	}
+	message := `Halo ` + mahasiswa.NamaLengkap + `,\n\nReport kamu dengan task ` + report.Task  + ` pada tanggal ` + report.CreatedAt.Time().Format("02-01-2006 15:04:05") + `, telah diberi nilai oleh pembimbing kamu. Silahkan cek di aplikasi intermoni.my.id.\n\nTerima kasih,\nAdmin Intern Monitoring`
+	err = intermoni.SendWhatsAppConfirmation(user.Phone, db, message)
 	if err != nil {
 		return err
 	}

@@ -242,21 +242,34 @@ func TestGetAllReportByMahasiswa5(t *testing.T) {
 	}
 }
 
-func TestSendWhatsAppConfirmation12(t *testing.T) {
-	id := "65ae77e51c0064f4ec9e135e"
+func TestSendWhatsAppConfirmation17(t *testing.T) {
+	id := "65b20df129f83344fd6d92de"
 	objectId, _ := primitive.ObjectIDFromHex(id)
 	user, err := intermoni.GetUserFromID(objectId, db)
 	if err != nil {
 		t.Errorf("error getting document: %v", err)
 	} else {
-		err = intermoni.SendWhatsAppConfirmation(user.Phone, db, `nsdn\nkdk`)
+		message := `Halo ` + user.Email + `,\n\nTask kamu telah diedit oleh mentor kamu. Silahkan cek di aplikasi intermoni.my.id\n\nTerima kasih,\nAdmin Intern Monitoring`
+		err = intermoni.SendWhatsAppConfirmation(user.Phone, db, message)
+		if err != nil {
+			t.Errorf("Error sending whatsapp: %v", err)
+		} else {
+			fmt.Println("Send whatsapp success")
+		}
+	}
+}
+
+func TestGetReportDate6(t *testing.T) {
+	// dt := time.Now()
+
+	id := "65ab9bcea1628e99f31b52c7"
+	objectId, _ := primitive.ObjectIDFromHex(id)
+	hasil, err := intermoni.GetReportFromID(objectId, db)
 	if err != nil {
-		t.Errorf("Error sending whatsapp: %v", err)
+		t.Errorf("Error TestGetReportDate: %v", err)
 	} else {
-		fmt.Println("Send whatsapp success")
+		fmt.Println(hasil.CreatedAt.Time().Format("02-01-2006 15:04:05"))
 	}
-	}
-	
 }
 
 // func TestInsertOneMagang(t *testing.T) {

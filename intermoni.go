@@ -504,8 +504,6 @@ func generateRandomFileName(originalFilename string) (string, error) {
 func SendWhatsAppConfirmation(phone string, db *mongo.Database, message string) error {
 	url := "https://api.wa.my.id/api/send/message/text"
 
-	
-
 	// Data yang akan dikirimkan dalam format JSON
 	jsonStr := []byte(`{
         "to": "` + phone + `",
