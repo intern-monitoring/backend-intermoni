@@ -52,6 +52,36 @@ func TambahReportByMahasiswa(iduser primitive.ObjectID, db *mongo.Database, r *h
 	if err != nil {
 		return err
 	}
+	mahasiswa, err := intermoni.GetMahasiswaFromID(mahasiswa_magang.Mahasiswa.ID, db)
+	if err != nil {
+		return err
+	}
+	mentor, err := intermoni.GetMentorFromID(mahasiswa_magang.Mentor.ID, db)
+	if err != nil {
+		return err
+	}
+	pembimbing, err := intermoni.GetPembimbingFromID(mahasiswa_magang.Pembimbing.ID, db)
+	if err != nil {
+		return err
+	}
+	user_mentor, err := intermoni.GetUserFromID(mentor.Akun.ID, db)
+	if err != nil {
+		return err
+	}
+	user_pembimbing, err := intermoni.GetUserFromID(pembimbing.Akun.ID, db)
+	if err != nil {
+		return err
+	}
+	message_toMentor := `Halo pak` + mentor.NamaLengkap + `,\n\nMahasiswa bimbingan kamu ` + mahasiswa.NamaLengkap + `, telah mengirim report baru. Silahkan cek di aplikasi intermoni.my.id.\n\nTerima kasih,\nAdmin Intern Monitoring`
+	err = intermoni.SendWhatsAppConfirmation(user_mentor.Phone, db, message_toMentor)
+	if err != nil {
+		return err
+	}
+	message_toPembimbing := `Halo pak` + pembimbing.NamaLengkap + `,\n\nMahasiswa bimbingan kamu ` + mahasiswa.NamaLengkap + `, telah mengirim report baru. Silahkan cek di aplikasi intermoni.my.id.\n\nTerima kasih,\nAdmin Intern Monitoring`
+	err = intermoni.SendWhatsAppConfirmation(user_pembimbing.Phone, db, message_toPembimbing)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

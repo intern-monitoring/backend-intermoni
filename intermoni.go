@@ -501,17 +501,14 @@ func generateRandomFileName(originalFilename string) (string, error) {
 	return randomFileName, nil
 }
 
-func SendWhatsAppConfirmation(iduser primitive.ObjectID, db *mongo.Database, message string) error {
+func SendWhatsAppConfirmation(phone string, db *mongo.Database, message string) error {
 	url := "https://api.wa.my.id/api/send/message/text"
 
-	user, err := GetUserFromID(iduser, db)
-	if err != nil {
-		return err
-	}
+	
 
 	// Data yang akan dikirimkan dalam format JSON
 	jsonStr := []byte(`{
-        "to": "` + user.Phone + `",
+        "to": "` + phone + `",
         "isgroup": false,
         "messages": "` + message + `"
     }`)

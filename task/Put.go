@@ -28,6 +28,23 @@ func EditTaskOlehMentor(idmahasiswamagang primitive.ObjectID, db *mongo.Database
 	if err != nil {
 		return err
 	}
+	mahasiswa_magang, err := intermoni.GetMahasiswaMagangFromID(idmahasiswamagang, db)
+	if err != nil {
+		return err
+	}
+	mahasiswa, err := intermoni.GetMahasiswaFromID(mahasiswa_magang.Mahasiswa.ID, db)
+	if err != nil {
+		return err
+	}
+	user, err := intermoni.GetUserFromID(mahasiswa.Akun.ID, db)
+	if err != nil {
+		return err
+	}
+	message := `Halo ` + mahasiswa.NamaLengkap + `,\n\nTask kamu telah diedit oleh mentor kamu. Silahkan cek di aplikasi intermoni.my.id\n\nTerima kasih,\nAdmin Intern Monitoring`
+	err = intermoni.SendWhatsAppConfirmation(user.Phone, db, message)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
