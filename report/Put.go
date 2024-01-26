@@ -176,7 +176,7 @@ func TambahNilaiByPembimbing(idreport, iduser primitive.ObjectID, db *mongo.Data
 	if err != nil {
 		return err
 	}
-	message := `Halo ` + mahasiswa.NamaLengkap + `,\n\nReport kamu dengan task ` + report.Task  + ` pada tanggal ` + report.CreatedAt.Time().Format("02-01-2006 15:04:05") + `, telah diberi nilai oleh pembimbing kamu. Silahkan cek di aplikasi intermoni.my.id.\n\nTerima kasih,\nAdmin Intern Monitoring`
+	message := `Halo ` + mahasiswa.NamaLengkap + `,\n\nReport kamu dengan task ` + `"` + report.Task  + `"` + ` pada tanggal ` + report.CreatedAt.Time().Format("02-01-2006 15:04:05") + `, telah diberi nilai oleh pembimbing kamu. Silahkan cek di aplikasi intermoni.my.id.\n\nTerima kasih,\nAdmin Intern Monitoring`
 	err = intermoni.SendWhatsAppConfirmation(user.Phone, db, message)
 	if err != nil {
 		return err

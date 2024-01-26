@@ -72,12 +72,12 @@ func TambahReportByMahasiswa(iduser primitive.ObjectID, db *mongo.Database, r *h
 	if err != nil {
 		return err
 	}
-	message_toMentor := `Halo pak` + mentor.NamaLengkap + `,\n\nMahasiswa bimbingan kamu ` + mahasiswa.NamaLengkap + `, telah mengirim report baru. Silahkan cek di aplikasi intermoni.my.id.\n\nTerima kasih,\nAdmin Intern Monitoring`
+	message_toMentor := `Halo pak ` + mentor.NamaLengkap + `,\n\nMahasiswa bimbingan kamu ` + mahasiswa.NamaLengkap + `, telah mengirim report baru. Silahkan cek di aplikasi intermoni.my.id.\n\nTerima kasih,\nAdmin Intern Monitoring`
 	err = intermoni.SendWhatsAppConfirmation(user_mentor.Phone, db, message_toMentor)
 	if err != nil {
 		return err
 	}
-	message_toPembimbing := `Halo pak` + pembimbing.NamaLengkap + `,\n\nMahasiswa bimbingan kamu ` + mahasiswa.NamaLengkap + `, telah mengirim report baru. Silahkan cek di aplikasi intermoni.my.id.\n\nTerima kasih,\nAdmin Intern Monitoring`
+	message_toPembimbing := `Halo pak ` + pembimbing.NamaLengkap + `,\n\nMahasiswa bimbingan kamu ` + mahasiswa.NamaLengkap + `, telah mengirim report baru. Silahkan cek di aplikasi intermoni.my.id.\n\nTerima kasih,\nAdmin Intern Monitoring`
 	err = intermoni.SendWhatsAppConfirmation(user_pembimbing.Phone, db, message_toPembimbing)
 	if err != nil {
 		return err
